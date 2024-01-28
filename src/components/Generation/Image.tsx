@@ -2,8 +2,8 @@ import dayjs from 'dayjs'
 import { useState, useMemo, useEffect, FC } from "react"
 import { Space, Image, Button, Spin, Empty, Input, message, ImageProps, Upload, UploadFile, UploadProps, GetProp, Tooltip } from "antd"
 import { PlusOutlined } from "@ant-design/icons"
-import { useAtom, projectAtom, selectImageAtom, settingAtom,IProject, IRecord, IImages } from "@/store/index"
-import { getPromptAndWeight, getSettingValue,getBase64, limitImage } from "@/utils/index"
+import { useAtom, projectAtom, selectImageAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
+import { getPromptAndWeight, getSettingValue, getBase64, limitImage } from "@/utils/index"
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
 
@@ -61,10 +61,8 @@ const Component: FC<IProps> = ({ project }) => {
   // generation button event
   const handleGeneration = async () => {
     if (!project.data) { return; }
-    let promptInfo = getPromptAndWeight(project.data.prompt ?? '');
-    let prompt = promptInfo.prompt;
-    let weight = promptInfo.weight;
-    if (!prompt) {
+    let text_prompts = getPromptAndWeight(project.data.prompt ?? '');
+    if (!text_prompts.length) {
       message.warning("Prompt is required.")
       return;
     }
@@ -74,15 +72,14 @@ const Component: FC<IProps> = ({ project }) => {
       let params = {
         ...getSettingValue(settingInfo),
         samples: IMAGES_NUMBER,
-        prompt, 
-        weight
+        text_prompts
       }
       let datas = await api.text2img(params);
       updateProjectRecord({
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         type: CLICK_TYPES.g,
         label: [CLICK_TYPES.g,].join(':'),
-        prompt,
+        prompt: project.data.prompt,
         imgs: Array(IMAGES_NUMBER).fill(null).map((_, index) => {
           let data = datas[index];
           let src = data.image;
@@ -102,10 +99,9 @@ const Component: FC<IProps> = ({ project }) => {
   // variation button event
   const handleVariation = async () => {
     if (!project.data) { return; }
-    let promptInfo = getPromptAndWeight(project.data.prompt ?? '');
-    let prompt = promptInfo.prompt;
-    let weight = promptInfo.weight;
-    if (!prompt) {
+
+    let text_prompts = getPromptAndWeight(project.data.prompt ?? '');
+    if (!text_prompts.length) {
       message.warning("Prompt is required.")
       return;
     }
@@ -122,8 +118,7 @@ const Component: FC<IProps> = ({ project }) => {
       let params = {
         ...getSettingValue(settingInfo),
         images,
-        prompt,
-        weight
+        text_prompts
       }
       let datas = await api.img2img(params);
 
@@ -131,7 +126,7 @@ const Component: FC<IProps> = ({ project }) => {
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         type: CLICK_TYPES.v,
         label: [CLICK_TYPES.v].join(':'),
-        prompt,
+        prompt: project.data.prompt,
         imgs: Array(IMAGES_NUMBER).fill(null).map((_, index) => {
           let data = datas[index];
           let src = data.image;

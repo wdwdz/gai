@@ -8,15 +8,25 @@ export function uuid() {
     return v.toString(16);
   });
 }
+interface ITextPromptInfo { text: string, weight?: number }
+export function getPromptAndWeight(prompt: string): ITextPromptInfo[] {
+  let _prompt = prompt.split("\n");
+  let _text_prompts: ITextPromptInfo[] = [];
+  _prompt.forEach((item) => {
+    let _arr = item.trim().split(":");
+    if (_arr.length) {
+      let _weight = _arr.pop();
+      if (isNaN(Number(_weight))) {
+        let text = [..._arr, _weight].join(':');
+        text && _text_prompts.push({ text })
+      } else {
+        let text = [..._arr].join(':');
+        text && _text_prompts.push({ text, weight: Number(_weight) })
+      }
+    }
+  })
 
-export function getPromptAndWeight(prompt: string) {
-  let _arr = prompt.split(":");
-  let _weight = _arr.pop();
-  if (isNaN(Number(_weight))) {
-    return { prompt, weight: 0.5 }
-  } else {
-    return { prompt: _arr.join('|'), weight: Number(_weight) }
-  }
+  return _text_prompts
 }
 
 export function getSettingValue(data: Record<string, any>) {
