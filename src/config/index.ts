@@ -12,7 +12,7 @@ export const firebase = {
   measurementId: "G-CCBW8THJP9"
 };
 
-export const baseUrl = process.env.NODE_ENV !== "development" ? ' http://localhost:3421/api' : "/api"
+export const baseUrl = process.env.NODE_ENV === "development" ? '/api' : "/api"
 
 export const version = "v_1_1"
 export const ai = {
