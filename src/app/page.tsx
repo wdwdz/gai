@@ -1,95 +1,190 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
 
-export default function Home() {
+import cloneDeep from "lodash/cloneDeep"
+import { Layout, Dropdown, Menu, theme, Button, message, Space } from 'antd';
+import { useAtom, projectAtom, projectSaveAtom, userInfoAtom } from "../store"
+import { useState, useMemo, useEffect } from "react";
+
+import { PlusOutlined ,SettingFilled  } from "@ant-design/icons"
+import GenerationImages from "@/components/Generation/Image"
+import GenerationRecords from "@/components/Generation/Record"
+import Setting from "@/components/Generation/Setting"
+import { uuid } from '@/utils/index'
+import * as api from "@/apis/index"
+
+import * as firebase from "@/lib/firebase";
+import Link from 'next/link'
+
+const { Header, Content, Footer } = Layout;
+
+export default function Page() {
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
+  // userinfo 
+  let [userInfo, setUserInfo] = useAtom(userInfoAtom);
+
+  // create message
+  const [projects, setProject] = useAtom(projectAtom);
+  const [projectSave, setProjectSave] = useAtom(projectSaveAtom);
+  const items = useMemo(() => {
+    if (!userInfo?.uid) {
+      return []
+    }
+    let map = projectSave[userInfo.uid] ?? {};
+    return projects.filter(item => !map[item.key]).map((item, index) => {
+      delete item.saved;
+      return {
+        ...item,
+        key: `${item.key}`,
+        onClick({ key }: { key: string }) {
+          setActiveTab(key)
+        }
+      }
+    })
+  }, [projects, projectSave, userInfo?.uid]);
+  const savedList = useMemo(() => {
+    if (!userInfo?.uid) {
+      return []
+    }
+    let map = projectSave[userInfo.uid] ?? {};
+    return projects.filter(item => !!map[item.key]).map((item, index) => {
+      return {
+        label: item.label,
+        key: `${item.key}`,
+        onClick({ key }: { key: string }) {
+          setActiveTab(key)
+        }
+      }
+    })
+  }, [projects, projectSave, userInfo?.uid]);
+
+  const [activeTab, setActiveTab] = useState<string>();
+  useEffect(() => {
+    if (!userInfo?.uid) {
+      setActiveTab(void 0)
+    } else if (projects.length && activeTab === void 0) {
+      setActiveTab(`${projects[0].key}`)
+    }
+  }, [projects, userInfo?.uid])
+  let project = useMemo(() => {
+    let index = projects.findIndex(({ key }) => {
+      return `${key}` === `${activeTab}`
+    });
+    if (index !== -1) {
+      return { data: projects[index], index }
+    }
+    return { data: null, index }
+  }, [activeTab, projects]);
+  const handleProject = () => {
+    if (!userInfo?.uid) {
+      message.warning("Please log in to your account.")
+      return;
+    }
+    setProject([{ key: uuid(), label: `project ${projects.length}` }, ...projects])
+  }
+
+  const [saveLoading, setSaveLoading] = useState(false);
+  function updateProjectSave(saved: boolean) {
+    let { data } = project;
+    if (!data || !userInfo) { return }
+    let key = data.key;
+    let uid = userInfo.uid;
+    let map = projectSave[uid] ?? {};
+    map[key] = saved;
+
+    setProjectSave({ ...projectSave, [uid]: map })
+  }
+  const handleSave = async () => {
+    if (!userInfo?.uid) {
+      message.warning("Please log in to your account.")
+      return;
+    }
+    if (!project.data) {
+      return;
+    }
+    try {
+      setSaveLoading(true)
+      await api.save({
+        uid: userInfo.uid, projects: [cloneDeep(project.data)]
+      });
+      updateProjectSave(true)
+      message.success("Save success")
+    } catch (error) {
+      message.error((error as any).message)
+    } finally {
+
+      setSaveLoading(false)
+    }
+  }
+  const handleLogout = async () => {
+    try {
+      await firebase.logout();
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  let [visible,setVisible] = useState(false)
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <Layout style={{ minHeight: "100vh", width: "100%" }}>
+      <Header
+        style={{
+          width: "100%",
+          display: 'flex',
+          alignItems: 'center',position:"relative",paddingRight:60
+        }}
+      >
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          selectedKeys={[activeTab!]}
+          items={items} style={{ flex: 1, minWidth: 0 }}
         />
-      </div>
+        <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
+        {userInfo?.uid ? <><Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
+          <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Saved list</Button>
+        </Dropdown>
+          <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Save</Button></> : null}
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Space style={{ marginLeft: 15 }} >
+          {userInfo?.uid ? <><Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
+            <span style={{ color: "#fff" }} title={userInfo?.displayName ?? userInfo?.email ?? ''}>{userInfo.displayName || userInfo.email}</span>
+          </Dropdown></> : <Link style={{ color: "#fff" }} href="/login"><span style={{ color: "#fff" }} >Log in</span></Link>}
+          <a style={{position:'absolute',top:'50%',right:0,padding:"0 15px",color:"#fff",fontSize:20,transform:'translateY(-50%)'}} title="Setting" onClick={()=>setVisible(true)}><SettingFilled /></a>
+        </Space>
+      </Header>
+      <Content
+        style={{
+          padding: '20px 48px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1400, margin: "auto",
+            background: colorBgContainer,
+            minHeight: 280,
+            padding: 24,
+            borderRadius: borderRadiusLG,
+            marginBottom: 24
+          }}
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+          <GenerationImages project={project} />
+        </div>
+        <div
+          style={{
+            maxWidth: 1400, margin: "auto",
+            background: colorBgContainer,
+            minHeight: 280,
+            padding: 24,
+            borderRadius: borderRadiusLG,
+          }}
         >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+          <GenerationRecords project={project} />
+        </div>
+      </Content>
+      <Setting open={visible} close={()=>setVisible(false)}/>
+    </Layout>
   );
 }
