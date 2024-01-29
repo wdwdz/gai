@@ -2,7 +2,7 @@
 
 import cloneDeep from "lodash/cloneDeep"
 import { Layout, Dropdown, Menu, theme, Button, message, Space } from 'antd';
-import { useAtom, projectAtom, projectSaveAtom, userInfoAtom } from "../store"
+import { useAtom, projectAtom, projectSaveAtom, userInfoAtom,selectRecordAtom } from "../store"
 import { useState, useMemo, useEffect } from "react";
 
 import { PlusOutlined ,SettingFilled  } from "@ant-design/icons"
@@ -23,6 +23,7 @@ export default function Page() {
   } = theme.useToken();
   // userinfo 
   let [userInfo, setUserInfo] = useAtom(userInfoAtom);
+  let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
 
   // create message
   const [projects, setProject] = useAtom(projectAtom);
@@ -53,6 +54,7 @@ export default function Page() {
         label: item.label,
         key: `${item.key}`,
         onClick({ key }: { key: string }) {
+          setSelectRecord(null);
           setActiveTab(key)
         }
       }

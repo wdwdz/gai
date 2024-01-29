@@ -2,14 +2,14 @@ import dayjs from 'dayjs'
 import { useState, useMemo, useEffect, FC } from "react"
 import { Space, Image, Button, Spin, Empty, Input, message, ImageProps, Upload, UploadFile, UploadProps, GetProp, Tooltip } from "antd"
 import { PlusOutlined } from "@ant-design/icons"
-import { useAtom, projectAtom, selectImageAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
-import { getPromptAndWeight, getSettingValue, getBase64, limitImage } from "@/utils/index"
+import { useAtom, projectAtom, selectImageAtom, selectRecordAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
+import { getPromptAndWeight, getSettingValue, getBase64, limitImage, uuid } from "@/utils/index"
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
-
+import { ACTION_TYPE, RECORD_FROM_TYPE } from "@/config/enums"
 
 const { TextArea } = Input;
-const CLICK_TYPES = { v: 'v', g: 'g', s: 'e' };
+const CLICK_TYPES = { ...ACTION_TYPE };
 
 interface IProps {
   project: {
@@ -21,11 +21,13 @@ const Component: FC<IProps> = ({ project }) => {
   let [loading, setLoading] = useState(false);
   let [projects, setProject] = useAtom(projectAtom);
   let [settingInfo,] = useAtom(settingAtom);
+  let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
   let [selectImage,] = useAtom(selectImageAtom);
 
   let [clickType, setClickType] = useState(CLICK_TYPES.g)
   // update project record
   function updateProjectRecord(record: IRecord) {
+    console.log("updateProjectRecord ~ record:", record, record.id, record.fromId)
     if (project.index === -1) {
       message.warning("Please create new project.")
       return;
@@ -40,7 +42,7 @@ const Component: FC<IProps> = ({ project }) => {
     } as IProject
     projects.splice(index, 1, newData);
     setProject([...projects])
-
+    setSelectRecord(record)
   }
   // update project prompt
   function updateProjectPrompt(prompt: string) {
@@ -76,9 +78,13 @@ const Component: FC<IProps> = ({ project }) => {
         text_prompts
       }
       let datas = await api.text2img(params);
+      let id = uuid();
       updateProjectRecord({
+        id,
+        fromId: id,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         type: CLICK_TYPES.g,
+        from: RECORD_FROM_TYPE.none,
         label: [CLICK_TYPES.g,].join(':'),
         prompt: project.data.prompt,
         imgs: Array(IMAGES_NUMBER).fill(null).map((_, index) => {
@@ -107,11 +113,17 @@ const Component: FC<IProps> = ({ project }) => {
       return;
     }
     let images = Object.values(imgs).map(item => item.src);
+    let from = RECORD_FROM_TYPE.none;
+    let id = uuid();
+    let fromId = selectRecord ? selectRecord.fromId : id;
     if (selectImgInfo.length) {
-      images = Array(IMAGES_NUMBER).fill(selectImgInfo.map(item => item.src)[0])
+      images = Array(IMAGES_NUMBER).fill(selectImgInfo.map(item => item.src)[0]);
+      from = ['index', selectImgInfo[0].index].join('_')
     }
     if (fileList.length) {
-      images = Array(IMAGES_NUMBER).fill(fileList.map(item => item.url)[0])
+      fromId = id;
+      images = Array(IMAGES_NUMBER).fill(fileList.map(item => item.url)[0]);
+      from = RECORD_FROM_TYPE.upload
     }
     setClickType(CLICK_TYPES.v)
     setLoading(true)
@@ -124,8 +136,11 @@ const Component: FC<IProps> = ({ project }) => {
       let datas = await api.img2img(params);
 
       updateProjectRecord({
+        id,
+        fromId,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         type: CLICK_TYPES.v,
+        from,
         label: [CLICK_TYPES.v].join(':'),
         prompt: project.data.prompt,
         imgs: Array(IMAGES_NUMBER).fill(null).map((_, index) => {
@@ -160,7 +175,12 @@ const Component: FC<IProps> = ({ project }) => {
         image
       }
       let datas = await api.img2imgUpscale(params);
+
+      let id = uuid();
+      let fromId = selectRecord ? selectRecord.fromId : id;
       updateProjectRecord({
+        id,
+        fromId,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         type: CLICK_TYPES.s,
         label: [CLICK_TYPES.s].join(':'),
@@ -195,11 +215,14 @@ const Component: FC<IProps> = ({ project }) => {
 
   //  update image list
   useEffect(() => {
-    if (project.index === -1) { return };
+    if (project.index === -1) { return setImgs({}) };
     let records = project.data?.records;
     if (records?.length) {
+      if (!selectRecord) {
+        setSelectRecord(records[0]);
+      }
       setImgs(() => ({}));
-      records.filter(item => Object.values(CLICK_TYPES).includes(item.type)).map(item => {
+      records.map(item => {
         return item.imgs
       }).reverse().forEach(_imgs => {
         _imgs.forEach(img => {
@@ -211,15 +234,23 @@ const Component: FC<IProps> = ({ project }) => {
           })
         })
       })
+
     } else {
+      setSelectRecord(null);
       setImgs({})
-      // handleGeneration()
     }
-  }, [project])
+  }, [project]);
   // update record selected image list
-  useEffect(() => {
-    setImgs({ ...imgs, ...selectImage })
-  }, [selectImage]);
+  let imgList = useMemo(() => {
+     let data ={
+      ...imgs,
+      ...selectImage
+    }
+    Object.keys(imgs).forEach(key=>{
+      data[key].selected = imgs[key].selected
+    })
+    return data
+  }, [imgs, selectImage])
   // image component props
   const getImgProps = (img: IImages, index: number): ImageProps => {
     return {
@@ -241,7 +272,7 @@ const Component: FC<IProps> = ({ project }) => {
   }
   // selected image event
   const handleSelectImage = (index: number) => {
-    let img = imgs[index];
+    let img = imgList[index];
     if (!img) { return }
     // if(!img.src){return}
     let selected = img.selected
@@ -350,7 +381,7 @@ const Component: FC<IProps> = ({ project }) => {
             <Space wrap={true} align="start">
               {Array(IMAGES_NUMBER).fill(null).map((_, index) => {
                 let _loading = loading;
-                let _img = imgs[index];
+                let _img = imgList[index];
                 let _hasSelect = !!selectImgInfo.length
                 if (_hasSelect && loading && clickType === CLICK_TYPES.v && !_img.selected) {
                   // _loading = false

@@ -38,9 +38,9 @@ export function limitImage(file: File, { type = ['image/png', 'image/jpeg', 'ima
 export async function compressImage(base64: string) {
   let [file, img] = await Promise.all([dataURLtoFile(base64), dataURLtoImage(base64)]);
   let { naturalWidth: width, naturalHeight: height } = img;
-  let size = 1000;
+  let size = 1024;
   if (Math.max(...[width, height]) < 2048) {
-    size = 500
+    size = 600
   }
   if (Math.max(...[width, height]) < 1024) {
     size = 300

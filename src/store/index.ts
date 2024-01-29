@@ -20,10 +20,13 @@ export interface IImages {
 
 }
 export interface IRecord {
+  id: string,
+  fromId: string,
   date: string,
   type: string,
   label: string,
   prompt?: string,
+  from?: string,
   imgs: IImages[]
 }
 export interface IProject {
@@ -56,8 +59,16 @@ export const updateTokenAtom = atomEffect((get) => {
   let user = get(userInfoAtom);
   http.setToken(user?.token ?? '')
 })
-export const selectImageAtom = atom<{ [index: string]: IImages }>({})
 
+export const selectRecordAtom = atom<IRecord | null>(null)
+export const selectImageAtom = atom<{ [index: string]: IImages }>((get) => {
+  let record = get(selectRecordAtom);
+  let data = (record?.imgs ?? []).reduce<Record<string, IImages>>((obj, img) => {
+    obj[img.index] = img;
+    return obj
+  }, {})
+  return data
+})
 
 
 

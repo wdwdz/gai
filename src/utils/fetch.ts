@@ -47,52 +47,75 @@ class Http {
     if (res.ok) {
       return checkData(await res.json())
     } else {
-      return Promise.reject(await res.json())
+      try {
+        let error = await res.json()
+        return Promise.reject(error)
+      } catch (error) {
+        console.log("response ~ error:", error)
+        let text = await res.text()
+        return Promise.reject({ message: text })
+      }
     }
   }
   //get 
   async get(url: string, query: Record<string, any>) {
-    const response = await fetch(convertUrl(url, query), {
-      headers: {
-        ...this.getHeader()
-      }
-    });
-    return this.response(response);
+    try {
+      const response = await fetch(convertUrl(url, query), {
+        headers: {
+          ...this.getHeader()
+        }
+      });
+      return this.response(response);
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
   //POST
   async post<T>(url: string, datas: T) {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        ...this.getHeader()
-      },
-      body: JSON.stringify(datas)
-    })
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          ...this.getHeader()
+        },
+        body: JSON.stringify(datas)
+      })
+      return this.response(response);
 
-    return this.response(response);
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 
   //PUT
   async put<T>(url: string, datas: T) {
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        ...this.getHeader()
-      },
-      body: JSON.stringify(datas)
-    })
-    return this.response(response);
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          ...this.getHeader()
+        },
+        body: JSON.stringify(datas)
+      })
+      return this.response(response);
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 
   //delete
   async delete(url: string, query: Record<string, any>) {
-    const response = await fetch(convertUrl(url, query), {
-      method: "DELETE",
-      headers: {
-        ...this.getHeader()
-      }
-    })
-    return this.response(response);
+    try {
+      const response = await fetch(convertUrl(url, query), {
+        method: "DELETE",
+        headers: {
+          ...this.getHeader()
+        }
+      })
+      return this.response(response);
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 }
 
