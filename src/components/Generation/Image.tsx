@@ -115,7 +115,7 @@ const Component: FC<IProps> = ({ project }) => {
     let images = Object.values(imgs).map(item => item.src);
     let from = RECORD_FROM_TYPE.none;
     let id = uuid();
-    let fromId = selectRecord ? selectRecord.fromId : id;
+    let fromId = selectRecord ? selectRecord.fromId ?? id : id;
     if (selectImgInfo.length) {
       images = Array(IMAGES_NUMBER).fill(selectImgInfo.map(item => item.src)[0]);
       from = ['index', selectImgInfo[0].index].join('_')
@@ -177,7 +177,7 @@ const Component: FC<IProps> = ({ project }) => {
       let datas = await api.img2imgUpscale(params);
 
       let id = uuid();
-      let fromId = selectRecord ? selectRecord.fromId : id;
+      let fromId = selectRecord ? selectRecord.fromId ?? id : id;
       updateProjectRecord({
         id,
         fromId,
@@ -242,11 +242,11 @@ const Component: FC<IProps> = ({ project }) => {
   }, [project]);
   // update record selected image list
   let imgList = useMemo(() => {
-     let data ={
+    let data = {
       ...imgs,
       ...selectImage
     }
-    Object.keys(imgs).forEach(key=>{
+    Object.keys(imgs).forEach(key => {
       data[key].selected = imgs[key].selected
     })
     return data
