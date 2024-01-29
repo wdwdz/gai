@@ -7,6 +7,7 @@ import { getPromptAndWeight, getSettingValue, getBase64, limitImage } from "@/ut
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
 
+
 const { TextArea } = Input;
 const CLICK_TYPES = { v: 'v', g: 'g', s: 'e' };
 

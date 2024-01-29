@@ -23,6 +23,9 @@ dependencies:
   form-data:
     specifier: ^4.0.0
     version: 4.0.0
+  image-conversion:
+    specifier: ^2.1.1
+    version: 2.1.1
   joi:
     specifier: ^17.12.0
     version: 17.12.0
@@ -2728,6 +2731,10 @@ packages:
     resolution: {integrity: sha512-g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==}
     engines: {node: '>= 4'}
     dev: true
+
+  /image-conversion@2.1.1:
+    resolution: {integrity: sha512-hnMOmP7q2jxA+52FZ+wHNhg3fdFRlgfngsQH2JQHEQkafY7tj/8F15e6Rv/RxDegc872jvyaRHwMbkTZK1Cjbg==}
+    dev: false
 
   /immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}

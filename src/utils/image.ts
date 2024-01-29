@@ -1,3 +1,4 @@
+import { compressAccurately, dataURLtoFile, dataURLtoImage, filetoDataURL } from 'image-conversion';
 export function base64ToImage(str: string) {
   const prefix = "data:image/png;base64,";
   return [prefix, str].join('')
@@ -32,4 +33,21 @@ export function limitImage(file: File, { type = ['image/png', 'image/jpeg', 'ima
     state: isJpgOrPng && isLt,
     message: ''
   };
+}
+
+export async function compressImage(base64: string) {
+  let [file, img] = await Promise.all([dataURLtoFile(base64), dataURLtoImage(base64)]);
+  let { naturalWidth: width, naturalHeight: height } = img;
+  let size = 1000;
+  if (Math.max(...[width, height]) < 2048) {
+    size = 500
+  }
+  if (Math.max(...[width, height]) < 1024) {
+    size = 300
+  }
+  return await filetoDataURL(await compressAccurately(file, {
+    width,
+    height,
+    size
+  }))
 }
