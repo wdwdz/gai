@@ -32,7 +32,7 @@ export default function Page() {
     if (!userInfo?.uid) {
       return []
     }
-    let map:any = /* projectSave[userInfo.uid] ?? */ {};
+    let map:any = projectSave[userInfo.uid] ?? {};
     return projects.filter(item => !map[item.key]).map((item, index) => {
       delete item.saved;
       return {
@@ -46,8 +46,7 @@ export default function Page() {
     })
   }, [projects, projectSave, userInfo?.uid]);
   const savedList = useMemo(() => {
-    return [];
-    /* if (!userInfo?.uid) {
+    if (!userInfo?.uid) {
       return []
     }
     let map = projectSave[userInfo.uid] ?? {};
@@ -60,7 +59,7 @@ export default function Page() {
           setActiveTab(key)
         }
       }
-    }) */
+    })
   }, [projects, projectSave, userInfo?.uid]);
 
   const [activeTab, setActiveTab] = useState<string>();
@@ -147,9 +146,9 @@ export default function Page() {
           items={items} style={{ flex: 1, minWidth: 0 }}
         />
         <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
-        {userInfo?.uid ? <>{/* <Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
+        {userInfo?.uid ? <><Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
           <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Saved list</Button>
-        </Dropdown> */}
+        </Dropdown>
           <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Save</Button></> : null}
 
         <Space style={{ marginLeft: 15 }} >
