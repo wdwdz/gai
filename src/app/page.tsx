@@ -2,10 +2,10 @@
 
 import cloneDeep from "lodash/cloneDeep"
 import { Layout, Dropdown, Menu, theme, Button, message, Space } from 'antd';
-import { useAtom, projectAtom, projectSaveAtom, userInfoAtom, selectRecordAtom } from "../store"
+import { useAtom, projectAtom, projectSaveAtom, userInfoAtom,selectRecordAtom } from "../store"
 import { useState, useMemo, useEffect } from "react";
 
-import { PlusOutlined, SettingFilled } from "@ant-design/icons"
+import { PlusOutlined ,SettingFilled  } from "@ant-design/icons"
 import GenerationImages from "@/components/Generation/Image"
 import GenerationRecords from "@/components/Generation/Record"
 import Setting from "@/components/Generation/Setting"
@@ -32,7 +32,7 @@ export default function Page() {
     if (!userInfo?.uid) {
       return []
     }
-    let map: any = /* projectSave[userInfo.uid] ?? */ {};
+    let map:any = /* projectSave[userInfo.uid] ?? */ {};
     return projects.filter(item => !map[item.key]).map((item, index) => {
       delete item.saved;
       return {
@@ -129,7 +129,7 @@ export default function Page() {
     }
   }
 
-  let [visible, setVisible] = useState(false)
+  let [visible,setVisible] = useState(false)
 
   return (
     <Layout style={{ minHeight: "100vh", width: "100%" }}>
@@ -137,7 +137,7 @@ export default function Page() {
         style={{
           width: "100%",
           display: 'flex',
-          alignItems: 'center', position: "relative", paddingRight: 60
+          alignItems: 'center',position:"relative",paddingRight:60
         }}
       >
         <Menu
@@ -147,16 +147,16 @@ export default function Page() {
           items={items} style={{ flex: 1, minWidth: 0 }}
         />
         <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
-        {/*  {userInfo?.uid ? <><Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
+        {userInfo?.uid ? <>{/* <Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
           <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Saved list</Button>
-        </Dropdown>
+        </Dropdown> */}
           <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Save</Button></> : null}
- */}
+
         <Space style={{ marginLeft: 15 }} >
           {userInfo?.uid ? <><Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
             <span style={{ color: "#fff" }} title={userInfo?.displayName ?? userInfo?.email ?? ''}>{userInfo.displayName || userInfo.email}</span>
           </Dropdown></> : <Link style={{ color: "#fff" }} href="/login"><span style={{ color: "#fff" }} >Log in</span></Link>}
-          <a style={{ position: 'absolute', top: '50%', right: 0, padding: "0 15px", color: "#fff", fontSize: 20, transform: 'translateY(-50%)' }} title="Setting" onClick={() => setVisible(true)}><SettingFilled /></a>
+          <a style={{position:'absolute',top:'50%',right:0,padding:"0 15px",color:"#fff",fontSize:20,transform:'translateY(-50%)'}} title="Setting" onClick={()=>setVisible(true)}><SettingFilled /></a>
         </Space>
       </Header>
       <Content
@@ -188,7 +188,7 @@ export default function Page() {
           <GenerationRecords project={project} />
         </div>
       </Content>
-      <Setting open={visible} close={() => setVisible(false)} />
+      <Setting open={visible} close={()=>setVisible(false)}/>
     </Layout>
   );
 }

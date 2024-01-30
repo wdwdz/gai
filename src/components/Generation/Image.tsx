@@ -160,9 +160,11 @@ const Component: FC<IProps> = ({ project }) => {
   // selection button event
   const handleSelection = async () => {
     if (!project.data) { return; }
-    let image = "";
+    let image = "";    
+    let from = RECORD_FROM_TYPE.none;
     if (selectImgInfo.length) {
-      image = selectImgInfo.map(item => item.src)[0]
+      image = selectImgInfo.map(item => item.src)[0];
+      from = ['index', selectImgInfo[0].index].join('_')
     }
     if (!image) {
       message.warning("Please select a picture to enlarge")
@@ -183,6 +185,7 @@ const Component: FC<IProps> = ({ project }) => {
         fromId,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         type: CLICK_TYPES.s,
+        from,
         label: [CLICK_TYPES.s].join(':'),
         prompt: "",
         imgs: [...selectImgInfo].map(item => {
