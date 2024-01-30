@@ -40,14 +40,13 @@ const Component: FC<IProps> = ({ project }) => {
     }
     return arr;
   }, [records]);
-  console.log("newList ~ newList:", newList);
 
   const handleSelectImage = (record:IRecord) => {
     setSelectRecord(record)
   }
 
   function getRecordLabel(record: IRecord) {
-    return <Space className="date" style={{}} >{record.date}{Object.values(RECORD_TYPES).includes(record.type) ? <Button className='btn-select' size="small" onClick={() => handleSelectImage(record)}>Select</Button> : null}</Space>
+    return <Space className="date" style={{}} ><span style={{whiteSpace:"nowrap"}}>{record.date}</span>{Object.values(RECORD_TYPES).includes(record.type) ? <Button className='btn-select' size="small" onClick={() => handleSelectImage(record)}>Select</Button> : null}</Space>
   }
   function getRecordImages(record: IRecord) {
     return <Space style={{ marginTop: "10px" }} size={[0,0]}>

@@ -32,20 +32,22 @@ export default function Page() {
     if (!userInfo?.uid) {
       return []
     }
-    let map = projectSave[userInfo.uid] ?? {};
+    let map:any = /* projectSave[userInfo.uid] ?? */ {};
     return projects.filter(item => !map[item.key]).map((item, index) => {
       delete item.saved;
       return {
         ...item,
         key: `${item.key}`,
         onClick({ key }: { key: string }) {
+          setSelectRecord(null);
           setActiveTab(key)
         }
       }
     })
   }, [projects, projectSave, userInfo?.uid]);
   const savedList = useMemo(() => {
-    if (!userInfo?.uid) {
+    return [];
+    /* if (!userInfo?.uid) {
       return []
     }
     let map = projectSave[userInfo.uid] ?? {};
@@ -58,7 +60,7 @@ export default function Page() {
           setActiveTab(key)
         }
       }
-    })
+    }) */
   }, [projects, projectSave, userInfo?.uid]);
 
   const [activeTab, setActiveTab] = useState<string>();
