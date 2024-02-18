@@ -51,6 +51,7 @@ export interface ISettingInfo {
 }
 export const settingAtom = atomWithStorage<ISettingInfo>('setting', { engine: ai.engines[0].id, seed: 0, steps: 30, /* cfg_scale: 7 */ }, asyncStorage, { getOnInit: !isServer })
 
+export const paramsDataAtom = atomWithStorage<Record<string, any>>('params-data', {}, asyncStorage, { getOnInit: !isServer })
 
 import type { TUser } from "@/lib/firebase"
 type IUserInfo = TUser | null

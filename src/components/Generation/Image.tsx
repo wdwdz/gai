@@ -2,11 +2,11 @@ import dayjs from 'dayjs'
 import { useState, useMemo, useEffect, FC } from "react"
 import { Space, Image, Button, Spin, Empty, Input, message, ImageProps, Upload, UploadFile, UploadProps, GetProp, Tooltip } from "antd"
 import { PlusOutlined } from "@ant-design/icons"
-import { useAtom, projectAtom, selectImageAtom, selectRecordAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
+import { useAtom, projectAtom, selectImageAtom, selectRecordAtom, paramsDataAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
 import { getPromptAndWeight, getSettingValue, getBase64, limitImage, uuid } from "@/utils/index"
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
-import { ACTION_TYPE, RECORD_FROM_TYPE } from "@/config/enums"
+import { ACTION_TYPE, RECORD_FROM_TYPE, IMAGE_FALLBACK } from "@/config/enums"
 
 const { TextArea } = Input;
 const CLICK_TYPES = { ...ACTION_TYPE };
@@ -22,12 +22,15 @@ const Component: FC<IProps> = ({ project }) => {
   let [projects, setProject] = useAtom(projectAtom);
   let [settingInfo,] = useAtom(settingAtom);
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
+  let [paramsData, setParamsData] = useAtom(paramsDataAtom);
   let [selectImage,] = useAtom(selectImageAtom);
 
   let [clickType, setClickType] = useState(CLICK_TYPES.g)
+
+
+
   // update project record
-  function updateProjectRecord(record: IRecord) {
-    console.log("updateProjectRecord ~ record:", record, record.id, record.fromId)
+  function updateProjectRecord(record: IRecord, params: Record<string, any>) {
     if (project.index === -1) {
       message.warning("Please create new project.")
       return;
@@ -42,7 +45,9 @@ const Component: FC<IProps> = ({ project }) => {
     } as IProject
     projects.splice(index, 1, newData);
     setProject([...projects])
-    setSelectRecord(record)
+    setSelectRecord(record);
+    console.log("updateProjectRecord ~ params:", params)
+    setParamsData({ ...paramsData, [record.id]: params })
   }
   // update project prompt
   function updateProjectPrompt(prompt: string) {
@@ -93,7 +98,7 @@ const Component: FC<IProps> = ({ project }) => {
           delete data.image
           return { ...data, index, src }
         })
-      })
+      }, params)
 
       setLoading(false)
     } catch (error) {
@@ -149,7 +154,7 @@ const Component: FC<IProps> = ({ project }) => {
           delete data.image
           return { ...data, index, src }
         })
-      })
+      }, params)
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -160,7 +165,7 @@ const Component: FC<IProps> = ({ project }) => {
   // selection button event
   const handleSelection = async () => {
     if (!project.data) { return; }
-    let image = "";    
+    let image = "";
     let from = RECORD_FROM_TYPE.none;
     if (selectImgInfo.length) {
       image = selectImgInfo.map(item => item.src)[0];
@@ -194,7 +199,7 @@ const Component: FC<IProps> = ({ project }) => {
           delete data.image
           return { ...data, index: item.index, src }
         })
-      })
+      }, params)
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -270,7 +275,7 @@ const Component: FC<IProps> = ({ project }) => {
         pointerEvent: img?.src ? 'auto' : 'none',
         objectFit: "cover"
       } as React.CSSProperties,
-      fallback: "data:image/png;base64,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"
+      fallback: IMAGE_FALLBACK
     }
   }
   // selected image event
@@ -364,7 +369,7 @@ const Component: FC<IProps> = ({ project }) => {
   return (<div style={{ flex: 1 }}>
     <Space direction="vertical" style={{ width: "100%" }} align='start'>
       <Space align="start" direction="vertical">
-        <span>Prompt options:</span>
+        <span>Prompts:</span>
         <Space align="start">
           <TextArea rows={5} value={project.data?.prompt ?? ''} onChange={handlePromptChange} style={{ width: 400 }} />
           {UploadElement}

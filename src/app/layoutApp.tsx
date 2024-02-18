@@ -9,7 +9,6 @@ const App: FC<{ children: React.ReactNode }> = ({ children }) => {
   let [, setUserInfo] = useAtom(userInfoAtom)
   useEffect(() => {
     let off = firebase.addUserStateChange(user => {
-      console.log("off ~ user:", user)
       setUserInfo(user)
     })
     return () => {
