@@ -1,4 +1,5 @@
 export const STYLE_PRESET = [
+  '',
   '3d-model',
   "analog-film",
   "anime",
