@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button, Space, Form, Input ,message} from 'antd';
 import {CloseOutlined} from "@ant-design/icons"
-import { userInfoAtom, useAtom } from "@/store/index"
+import { userInfoAtom, accessCodeAtom, useAtom } from "@/store/index"
 import * as firebase from "@/lib/firebase";
 import css from "@/page.module.scss"
 
@@ -13,6 +13,8 @@ import {IFormInfo} from "@/lib/firebase"
 
 function Component() {
   let [userInfo] = useAtom(userInfoAtom);
+  let [, setAccessCode] = useAtom(accessCodeAtom);
+
   let navigate = useRouter()
 
   let [formRef] = Form.useForm<IFormInfo>()
@@ -47,6 +49,7 @@ function Component() {
           return;
         }
         await firebase.anonymousSignIn();
+        setAccessCode(accessCodes[values.accessCode]);
         formRef.resetFields();
         message.success("Log in successfully")
         return;
