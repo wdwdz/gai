@@ -12,6 +12,9 @@ var storage = localForage.createInstance({
 });
 const asyncStorage = createJSONStorage<any>(isServer ? () => void 0 : () => storage as any);
 
+export interface IAccessCode {
+  showPromptHistory:  boolean,
+}
 export interface IImages {
   src: string,
   index: number,
@@ -60,7 +63,7 @@ export const updateTokenAtom = atomEffect((get) => {
   let user = get(userInfoAtom);
   http.setToken(user?.token ?? '')
 })
-
+export const accessCodeAtom = atom<IAccessCode | null>(null)
 export const selectRecordAtom = atom<IRecord | null>(null)
 export const selectImageAtom = atom<{ [index: string]: IImages }>((get) => {
   let record = get(selectRecordAtom);
