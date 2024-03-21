@@ -25,6 +25,33 @@ function Component() {
   const onFinish = async (values:IFormInfo) => {
     try {
       setLoading(true)
+      if (values.accessCode && (values.username || values.password)) {
+        // Only one of access code or username and password should be provided
+        message.error('Please provide either an access code or username and password, not both.');
+        return;
+      } 
+      if (!values.accessCode && !(values.username && values.password)) {
+        // Either access code or username and password should be provided
+        message.error('Please provide either an access code or username and password.');
+        return;
+      }
+      if (values.accessCode) {
+        const accessCodes = await firebase.getAccessCodes();
+        if (!accessCodes) {
+          message.error('Invalid access code');
+          return;
+        }
+        const accessCodesArr = Object.keys(accessCodes);
+        if (!accessCodesArr.includes(values.accessCode)) {
+          message.error('Invalid access code');
+          return;
+        }
+        await firebase.anonymousSignIn();
+        formRef.resetFields();
+        message.success("Log in successfully")
+        return;
+      }
+
       await firebase.login({ email: values.username as string, password: values.password })
       formRef.resetFields();
       message.success("Log in successfully")
@@ -47,6 +74,18 @@ function Component() {
           onFinish={onFinish}
           autoComplete="off"
         >
+
+          <Form.Item
+            label="Access Code"
+            name="accessCode"
+          >
+            <Input />
+          </Form.Item>
+
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <span style={{ padding: '0.5rem', background: '#f0f0f0' }}>OR</span>
+          </div>
+
           <Form.Item
             label="Username"
             name="username"
@@ -54,10 +93,6 @@ function Component() {
               {
                 type: 'email',
                 message: 'The input is not valid E-mail!',
-              },
-              {
-                required: true,
-                message: 'Please input your E-mail!',
               }
             ]}
           >
@@ -69,9 +104,6 @@ function Component() {
             name="password"
             rules={[
               {
-                required: true,
-                message: 'Please input your password!',
-              }, {
                 min: 8,
                 message: "Password must be at least 8 characters long"
               }

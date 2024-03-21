@@ -156,10 +156,14 @@ export default function Page() {
           <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Save</Button></> : null}
 
         <Space style={{ marginLeft: 15 }} >
-          {userInfo?.uid ? <><Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
-            <span style={{ color: "#fff" }} title={userInfo?.displayName ?? userInfo?.email ?? ''}>{userInfo.displayName || userInfo.email}</span>
-          </Dropdown></> : <Link style={{ color: "#fff" }} href="/login"><span style={{ color: "#fff" }} >Log in</span></Link>}
-          <a style={{ position: 'absolute', top: '50%', right: 0, padding: "0 15px", color: "#fff", fontSize: 20, transform: 'translateY(-50%)' }} title="Setting" onClick={() => setVisible(true)}><SettingFilled /></a>
+          {userInfo?.uid ? 
+            <><Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
+              <span style={{ color: "#fff" }} title={userInfo?.displayName ?? userInfo?.email ?? ''}>
+                {userInfo.displayName || userInfo.email || 'Anonymous'}
+              </span>
+            </Dropdown></> : 
+            <Link style={{ color: "#fff" }} href="/login"><span style={{ color: "#fff" }} >Log in</span></Link>}
+            <a style={{ position: 'absolute', top: '50%', right: 0, padding: "0 15px", color: "#fff", fontSize: 20, transform: 'translateY(-50%)' }} title="Setting" onClick={() => setVisible(true)}><SettingFilled /></a>
         </Space>
       </Header>
       <Content

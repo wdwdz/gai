@@ -17,9 +17,7 @@ const App: FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [])
 
   return (
-  // <Provider store={store}>
     <ConfigProvider >{children}</ConfigProvider>
-  // </Provider>
   );
 
 }

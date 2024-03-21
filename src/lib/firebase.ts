@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import {
   signInWithEmailAndPassword,
+  signInAnonymously,
   createUserWithEmailAndPassword,
   browserSessionPersistence,
   setPersistence,
@@ -8,7 +9,8 @@ import {
   onAuthStateChanged,
   signOut,
   updateProfile,
-  UserCredential, User
+  UserCredential,
+  User,
 } from "firebase/auth";
 import { firebase, version } from "@/config/index"
 
@@ -65,6 +67,11 @@ export const addUserStateChange = (callback: (user: TUser | null) => void) => {
   })
 }
 
+// anonymously sign in
+export const anonymousSignIn = async () => {
+  userCredential = await signInAnonymously(auth);
+  return { ...(await getUserInfo()) } as TUser;
+}
 
 const db = getDatabase(app);
 export const getDbRef = ({ path, uid }: { path: string, uid: string }) => {
@@ -79,8 +86,18 @@ export const getRefData = ({ path, uid }: { path: string, uid: string }) => {
   return get(ref).then(data => data.exists() ? data.val() : null)
 }
 
+// get access codes
+export const getAccessCodeRef = async () => {
+  return ref(db, [version, 'access_code'].join("/"));
+}
+export const getAccessCodes = async () => {
+  let ref = await getAccessCodeRef();
+  return get(ref).then(data => data.exists() ? data.val() : null)
+}
+
 export interface IFormInfo {
   displayName?: string, email: string, password: string,
   username?: string,
-  nickname?: string
+  nickname?: string,
+  accessCode?: string,
 }
