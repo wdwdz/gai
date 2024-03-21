@@ -2,7 +2,7 @@
 
 import cloneDeep from "lodash/cloneDeep"
 import { Layout, Dropdown, Menu, theme, Button, message, Space, Row, Col } from 'antd';
-import { useAtom, projectAtom, projectSaveAtom, userInfoAtom, selectRecordAtom } from "../store"
+import { useAtom, projectAtom, projectSaveAtom, userInfoAtom, selectRecordAtom, accessCodeAtom } from "../store"
 import { useState, useMemo, useEffect } from "react";
 
 import { PlusOutlined, SettingFilled } from "@ant-design/icons"
@@ -24,6 +24,7 @@ export default function Page() {
   } = theme.useToken();
   // userinfo 
   let [userInfo, setUserInfo] = useAtom(userInfoAtom);
+  let [accessCode] = useAtom(accessCodeAtom);
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
 
   // create message
@@ -190,17 +191,19 @@ export default function Page() {
             </Col>
           </Row>
         </div>
-        <div
-          style={{
-            maxWidth: 1400, margin: "auto",
-            background: colorBgContainer,
-            minHeight: 280,
-            padding: 24,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          <GenerationRecords project={project} />
-        </div>
+        {accessCode?.showPromptHistory ? (
+          <div
+            style={{
+              maxWidth: 1400, margin: "auto",
+              background: colorBgContainer,
+              minHeight: 280,
+              padding: 24,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            <GenerationRecords project={project} />
+          </div>
+        ) : null}
       </Content>
       <Setting open={visible} close={() => setVisible(false)} />
     </Layout>
