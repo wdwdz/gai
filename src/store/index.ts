@@ -19,8 +19,7 @@ export interface IImages {
   src: string,
   index: number,
   selected?: boolean,
-
-
+  canvas?: any,
 }
 export interface IRecord {
   id: string,

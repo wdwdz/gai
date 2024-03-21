@@ -7,6 +7,7 @@ import { getPromptAndWeight, getSettingValue, getBase64, limitImage, uuid } from
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
 import { ACTION_TYPE, RECORD_FROM_TYPE, IMAGE_FALLBACK } from "@/config/enums"
+import { fabric } from 'fabric'
 
 const { TextArea } = Input;
 const CLICK_TYPES = { ...ACTION_TYPE };
@@ -19,15 +20,12 @@ interface IProps {
 }
 const Component: FC<IProps> = ({ project }) => {
   let [loading, setLoading] = useState(false);
+  let [inPaint, setInPaint] = useState(false);
   let [projects, setProject] = useAtom(projectAtom);
   let [settingInfo,] = useAtom(settingAtom);
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
   let [paramsData, setParamsData] = useAtom(paramsDataAtom);
   let [selectImage,] = useAtom(selectImageAtom);
-
-  let [clickType, setClickType] = useState(CLICK_TYPES.g)
-
-
 
   // update project record
   function updateProjectRecord(record: IRecord, params: Record<string, any>) {
@@ -74,7 +72,6 @@ const Component: FC<IProps> = ({ project }) => {
       message.warning("Prompt is required.")
       return;
     }
-    setClickType(CLICK_TYPES.g)
     setLoading(true)
     try {
       let params = {
@@ -130,7 +127,6 @@ const Component: FC<IProps> = ({ project }) => {
       images = Array(IMAGES_NUMBER).fill(fileList.map(item => item.url)[0]);
       from = RECORD_FROM_TYPE.upload
     }
-    setClickType(CLICK_TYPES.v)
     setLoading(true)
     try {
       let params = {
@@ -162,8 +158,36 @@ const Component: FC<IProps> = ({ project }) => {
     }
     setLoading(false)
   }
+  const handleInpaint = async () => {
+    const canvasWrapper = document.getElementById(`canvas-wrapper-${selectImgInfo[0].index}`) as HTMLDivElement;
+    if (inPaint) {
+      canvasWrapper.style.display = 'none';
+      setInPaint(false);
+      return;
+    }
+    setInPaint(true);
+    if (!project.data) { return; }
+    let image = "";
+    let from = RECORD_FROM_TYPE.none;
+    if (selectImgInfo.length) {
+      image = selectImgInfo.map(item => item.src)[0];
+      from = ['index', selectImgInfo[0].index].join('_')
+    };
+    if (!image) {
+      message.warning("Please select a picture to inpaint")
+      return;
+    }
+    canvasWrapper.style.display = 'block';
+    const fabricCanvas = selectImgInfo[0].canvas;
+    fabricCanvas.clear();
+    fabricCanvas.isDrawingMode = true;
+    // // Set drawing properties
+    fabricCanvas.freeDrawingBrush.color = 'black';
+    fabricCanvas.freeDrawingBrush.width = 20;
+  }
+
   // selection button event
-  const handleSelection = async () => {
+  const handleEnlarge = async () => {
     if (!project.data) { return; }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
@@ -175,7 +199,6 @@ const Component: FC<IProps> = ({ project }) => {
       message.warning("Please select a picture to enlarge")
       return;
     }
-    setClickType(CLICK_TYPES.s)
     setLoading(true)
     try {
       let params = {
@@ -281,13 +304,24 @@ const Component: FC<IProps> = ({ project }) => {
   // selected image event
   const handleSelectImage = (index: number) => {
     let img = imgList[index];
-    if (!img) { return }
+    if (!img || inPaint) { return }
     // if(!img.src){return}
     let selected = img.selected
     if (!selected) {
       Object.values(imgs).forEach(item => item.selected = false)
     }
     img.selected = !selected;
+    const canvasId = `canvas-${index}`
+    const canvasWrapper = document.getElementById(`canvas-wrapper-${index}`) as HTMLDivElement;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (!canvas) {
+      const newCanvas = document.createElement("canvas");
+      newCanvas.id = canvasId;
+      canvasWrapper.appendChild(newCanvas);
+      const fabricCanvas = new fabric.Canvas(newCanvas, {width: 300, height: 300});
+      img.canvas = fabricCanvas;
+    }
+
     setImgs({
       ...imgs,
       [index]: img
@@ -375,12 +409,17 @@ const Component: FC<IProps> = ({ project }) => {
           {UploadElement}
         </Space>
         <Space align="start">
-          <Button disabled={loading || !project.data?.prompt} onClick={handleGeneration}>Generation</Button>
+          <Button disabled={loading || !project.data?.prompt || inPaint} onClick={handleGeneration}>Generation</Button>
           <Tooltip title="You can select or upload the image you want to variation.">
             <Button disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
           </Tooltip>
 
-          <Button disabled={loading || !(selectImgInfo.length)} onClick={handleSelection}>Enlarge</Button>
+          <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button>
+          <Button 
+            disabled={loading || !(selectImgInfo.length)}
+            onClick={handleInpaint}
+            style={inPaint ? { backgroundColor: 'blue', color: 'white' } : {}}
+          >Paint</Button>
         </Space>
       </Space>
       <Space direction="vertical">
@@ -390,12 +429,17 @@ const Component: FC<IProps> = ({ project }) => {
               {Array(IMAGES_NUMBER).fill(null).map((_, index) => {
                 let _loading = loading;
                 let _img = imgList[index];
-                let _hasSelect = !!selectImgInfo.length
-                if (_hasSelect && loading && clickType === CLICK_TYPES.v && !_img.selected) {
-                  // _loading = false
-                }
                 return <Spin spinning={_loading} key={index}>
-                  <Image alt='' {...getImgProps(_img, index)} onClick={() => handleSelectImage(index)} />
+                  <Image
+                    id={`image-${index}`}
+                    alt='' {...getImgProps(_img, index)}
+                    onClick={() => handleSelectImage(index)}
+                  />
+                  <div
+                    id={`canvas-wrapper-${index}`}
+                    style={{ display: 'none', position: 'absolute', top: 0, left: 0 }}
+                  >
+                  </div>
                 </Spin>
               })}
             </Space>
