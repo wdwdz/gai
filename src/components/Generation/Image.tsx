@@ -142,6 +142,8 @@ const Component: FC<IProps> = ({ project }) => {
         params.image = image;
         params.mask = mask;
         let response = await api.imgInPaint(params);
+        delete params.image;
+        delete params.mask;
         updateProjectRecord({
           id,
           fromId,

@@ -6,7 +6,8 @@ import { ACTION_TYPE,IMAGE_FALLBACK } from "@/config/enums"
 const TYPE_CONTENT = {
   [ACTION_TYPE.g]:"Generation",
   [ACTION_TYPE.v]:"Variation",
-  [ACTION_TYPE.s]:"Enlarge"
+  [ACTION_TYPE.s]:"Enlarge",
+  [ACTION_TYPE.i]:"Inpaint"
 }
 const Component: FC = () => {
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
