@@ -44,7 +44,6 @@ const Component: FC<IProps> = ({ project }) => {
     projects.splice(index, 1, newData);
     setProject([...projects])
     setSelectRecord(record);
-    console.log("updateProjectRecord ~ params:", params)
     setParamsData({ ...paramsData, [record.id]: params })
   }
   // update project prompt
@@ -124,13 +123,7 @@ const Component: FC<IProps> = ({ project }) => {
       let fromId = selectRecord ? selectRecord.fromId ?? id : id;
 
       if (inPaint) {
-        // generate inpaint image for masking
         let image = "";
-        let canvas = selectImgInfo[0].canvas;
-        var ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        let mask = canvas.toDataURL('image/png');
         if (selectImgInfo.length) {
           image = selectImgInfo.map(item => item.src)[0];
           from = ['index', selectImgInfo[0].index].join('_')
@@ -139,11 +132,19 @@ const Component: FC<IProps> = ({ project }) => {
           message.warning("Please select a picture to enlarge")
           return;
         }
+        // generate inpaint image for masking
+        let canvas = selectImgInfo[0].canvas;
+        let canvasWrapperId = selectImgInfo[0].canvasWrapperId;
+        let canvasWrapper = document.getElementById(canvasWrapperId) as HTMLDivElement;
+        let mask = canvas.toDataURL('image/png');
+        canvas.isDrawingMode = false;
         params.image = image;
         params.mask = mask;
         let response = await api.imgInPaint(params);
         delete params.image;
         delete params.mask;
+        canvas.clear();
+        canvasWrapper.style.display = 'none';
         updateProjectRecord({
           id,
           fromId,
@@ -156,7 +157,7 @@ const Component: FC<IProps> = ({ project }) => {
             let data = response[0];
             let src = data.image;
             delete data.image
-            return { ...data, index: item.index, src }
+            return { ...data, index: item.index, src, canvas: item.canvas, canvasWrapperId: item.canvasWrapperId}
           })
         }, params)
         setInPaint(false);
@@ -351,12 +352,13 @@ const Component: FC<IProps> = ({ project }) => {
     const canvasId = `canvas-${index}`
     const canvasWrapper = document.getElementById(`canvas-wrapper-${index}`) as HTMLDivElement;
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    if (!canvas) {
+    if (!canvas || !img.canvas) {
       const newCanvas = document.createElement("canvas");
       newCanvas.id = canvasId;
       canvasWrapper.appendChild(newCanvas);
       const fabricCanvas = new fabric.Canvas(newCanvas, {width: 300, height: 300});
       img.canvas = fabricCanvas;
+      img.canvasWrapperId = `canvas-wrapper-${index}`;
     }
 
     setImgs({
