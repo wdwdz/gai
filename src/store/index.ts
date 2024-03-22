@@ -20,6 +20,7 @@ export interface IImages {
   index: number,
   selected?: boolean,
   canvas?: any,
+  canvasWrapperId?: any,
 }
 export interface IRecord {
   id: string,
