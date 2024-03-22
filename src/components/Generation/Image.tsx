@@ -54,7 +54,6 @@ const Component: FC<IProps> = ({ project }) => {
       return;
     }
     let { data, index } = project;
-
     let newData = {
       ...data,
       prompt
@@ -296,7 +295,7 @@ const Component: FC<IProps> = ({ project }) => {
           setImgs(imgs => {
             return {
               ...imgs,
-              [img.index]: { ...img, selected: false }
+              [img.index]: { ...img, selected: img.selected ?? false}
             }
           })
         })

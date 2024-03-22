@@ -108,8 +108,12 @@ export async function imgInpaint({ engine, ...data }: { engine: string, [key: st
   const maskPath = await base64ToTempImg(data.mask);
   formData.append('image', fs.createReadStream(imgPath));
   formData.append('mask', fs.createReadStream(maskPath));
-  if (data.text_prompts) {
-    formData.append("prompt", data.text_prompts.join(","));
+  if (data.text_prompts.length > 0) {
+    let text = "";
+    data.text_prompts.forEach((item: any) => {
+      text += item.text + ". ";
+    });
+    formData.append("prompt", text);
   }
   formData.append("output_format", "png");
   let url = getApiUrl(`/v2beta/stable-image/edit/inpaint`);
