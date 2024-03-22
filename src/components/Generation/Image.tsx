@@ -114,51 +114,87 @@ const Component: FC<IProps> = ({ project }) => {
       message.warning("Prompt is required.")
       return;
     }
-    let images = Object.values(imgs).map(item => item.src);
-    let from = RECORD_FROM_TYPE.none;
-    let id = uuid();
-    let fromId = selectRecord ? selectRecord.fromId ?? id : id;
-    if (selectImgInfo.length) {
-      images = Array(IMAGES_NUMBER).fill(selectImgInfo.map(item => item.src)[0]);
-      from = ['index', selectImgInfo[0].index].join('_')
-    }
-    if (fileList.length) {
-      fromId = id;
-      images = Array(IMAGES_NUMBER).fill(fileList.map(item => item.url)[0]);
-      from = RECORD_FROM_TYPE.upload
-    }
-    setLoading(true)
     try {
-      let params = {
+      setLoading(true)
+      let params:any = {
         ...getSettingValue(settingInfo),
-        images,
         text_prompts
       }
-      let datas = await api.img2img(params);
+      let from = RECORD_FROM_TYPE.none;
+      let id = uuid();
+      let fromId = selectRecord ? selectRecord.fromId ?? id : id;
 
-      updateProjectRecord({
-        id,
-        fromId,
-        date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        type: CLICK_TYPES.v,
-        from,
-        label: [CLICK_TYPES.v].join(':'),
-        prompt: project.data.prompt,
-        imgs: Array(IMAGES_NUMBER).fill(null).map((_, index) => {
-          let data = datas[index];
-          let src = data.image;
-          delete data.image
-          return { ...data, index, src }
-        })
-      }, params)
-      setLoading(false)
+      if (inPaint) {
+        // generate inpaint image for masking
+        let image = "";
+        let canvas = selectImgInfo[0].canvas;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let mask = canvas.toDataURL('image/png');
+        if (selectImgInfo.length) {
+          image = selectImgInfo.map(item => item.src)[0];
+          from = ['index', selectImgInfo[0].index].join('_')
+        }
+        if (!image) {
+          message.warning("Please select a picture to enlarge")
+          return;
+        }
+        params.image = image;
+        params.mask = mask;
+        let response = await api.imgInPaint(params);
+        updateProjectRecord({
+          id,
+          fromId,
+          date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          type: CLICK_TYPES.i,
+          from,
+          label: [CLICK_TYPES.i].join(':'),
+          prompt: "",
+          imgs: [...selectImgInfo].map(item => {
+            let data = response[0];
+            let src = data.image;
+            delete data.image
+            return { ...data, index: item.index, src }
+          })
+        }, params)
+        setInPaint(false);
+      } else {
+        let images = Object.values(imgs).map(item => item.src);
+        if (selectImgInfo.length) {
+          images = Array(IMAGES_NUMBER).fill(selectImgInfo.map(item => item.src)[0]);
+          from = ['index', selectImgInfo[0].index].join('_')
+        }
+        if (fileList.length) {
+          fromId = id;
+          images = Array(IMAGES_NUMBER).fill(fileList.map(item => item.url)[0]);
+          from = RECORD_FROM_TYPE.upload
+        }
+        params.images = images;
+        let datas = await api.img2img(params);
+        updateProjectRecord({
+          id,
+          fromId,
+          date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          type: CLICK_TYPES.v,
+          from,
+          label: [CLICK_TYPES.v].join(':'),
+          prompt: project.data.prompt,
+          imgs: Array(IMAGES_NUMBER).fill(null).map((_, index) => {
+            let data = datas[index];
+            let src = data.image;
+            delete data.image
+            return { ...data, index, src }
+          })
+        }, params)
+      }
     } catch (error) {
-      setLoading(false)
       message.error((error as any).message)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
-  const handleInpaint = async () => {
+  const handleInPaint = async () => {
     const canvasWrapper = document.getElementById(`canvas-wrapper-${selectImgInfo[0].index}`) as HTMLDivElement;
     if (inPaint) {
       canvasWrapper.style.display = 'none';
@@ -182,7 +218,7 @@ const Component: FC<IProps> = ({ project }) => {
     fabricCanvas.clear();
     fabricCanvas.isDrawingMode = true;
     // // Set drawing properties
-    fabricCanvas.freeDrawingBrush.color = 'black';
+    fabricCanvas.freeDrawingBrush.color = 'white';
     fabricCanvas.freeDrawingBrush.width = 20;
   }
 
@@ -417,7 +453,7 @@ const Component: FC<IProps> = ({ project }) => {
           <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button>
           <Button 
             disabled={loading || !(selectImgInfo.length)}
-            onClick={handleInpaint}
+            onClick={handleInPaint}
             style={inPaint ? { backgroundColor: 'blue', color: 'white' } : {}}
           >Paint</Button>
         </Space>

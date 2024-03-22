@@ -16,6 +16,11 @@ export async function text2img(data: any) {
   return compressImages(result.data)
 }
 
+export async function imgInPaint(data: any) {
+  let result = await http.post(`${base_url}/image-inpaint`, data);
+  return compressImages(result.data)
+}
+
 export async function img2img(data: any) {
   let result = await http.post(`${base_url}/image-to-image`, data);
   return compressImages(result.data)

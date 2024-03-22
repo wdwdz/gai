@@ -1,6 +1,7 @@
 import { ai } from "@/config/index"
 import { base64ToFile } from "@/utils/index"
 import FormData from 'form-data'
+import fs from 'fs'
 let Authorization = `Bearer ${ai.apiKey}`
 
 function getApiUrl(url: string) {
@@ -98,4 +99,48 @@ export async function img2imgUpscale({ engine, ...data }: { engine: string, [key
     throw await response.json()
   }
   return await response.json()
+}
+
+export async function imgInpaint({ engine, ...data }: { engine: string, [key: string]: any }): Promise<any> {
+  const { default: fetch } = await import("node-fetch");
+  const formData = new FormData();
+  const imgPath = await base64ToTempImg(data.image);
+  const maskPath = await base64ToTempImg(data.mask);
+  formData.append('image', fs.createReadStream(imgPath));
+  formData.append('mask', fs.createReadStream(maskPath));
+  if (data.text_prompts) {
+    formData.append("prompt", data.text_prompts.join(","));
+  }
+  formData.append("output_format", "png");
+  let url = getApiUrl(`/v2beta/stable-image/edit/inpaint`);
+  let headers = {
+    ...formData.getHeaders(),
+    Accept: 'application/json',
+    Authorization,
+  };
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: formData,
+  })
+  if (!response.ok) {
+    throw await response.json()
+  }
+  return await response.json()
+}
+
+async function base64ToTempImg(str: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let base64 = str.replace(/^data:image\/\w+;base64,/, "");
+    let buffer = Buffer.from(base64, 'base64');
+    // Create a temporary file with random name
+    const tempFilePath = `/tmp/${Math.random().toString(36).substring(7)}.png`;
+    fs.writeFile(tempFilePath, buffer, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(tempFilePath);
+      }
+    });
+  });
 }
