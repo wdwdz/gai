@@ -10,7 +10,7 @@ export const STYLE_PRESET = [
 
 
 export const ACTION_TYPE = {
-  v: 'v', g: 'g', s: 'e'
+  v: 'v', g: 'g', s: 'e', i: 'i'
 }
 
 export const RECORD_FROM_TYPE = {
