@@ -81,7 +81,7 @@ export default function Page() {
       }
     };
     // fetch projects from Firebase if there are no projects and user is logged in
-    if (projects.length === 0 && userInfo?.uid) {
+    if (userInfo?.uid) {
       fetchProjects(userInfo?.uid);
     }
   }, []);
@@ -172,9 +172,10 @@ export default function Page() {
           items={items} style={{ flex: 1, minWidth: 0 }}
         />
         <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
-        {userInfo?.uid ? <><Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
-          <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Saved list</Button>
-        </Dropdown>
+        {userInfo?.uid ? <>
+          <Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
+            <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Saved list</Button>
+          </Dropdown>
           <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Save</Button></> : null}
 
         <Space style={{ marginLeft: 15 }} >
