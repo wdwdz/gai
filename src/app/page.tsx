@@ -2,7 +2,7 @@
 
 import cloneDeep from "lodash/cloneDeep"
 import { Layout, Dropdown, Menu, theme, Button, message, Space, Row, Col } from 'antd';
-import { useAtom, projectAtom, projectSaveAtom, userInfoAtom, selectRecordAtom, accessCodeAtom } from "../store"
+import { useAtom, projectAtom, projectSaveAtom, userInfoAtom, selectRecordAtom, accessCodeAtom, IProject } from "../store"
 import { useState, useMemo, useEffect } from "react";
 
 import { PlusOutlined, SettingFilled } from "@ant-design/icons"
@@ -28,7 +28,7 @@ export default function Page() {
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
 
   // create message
-  const [projects, setProject] = useAtom(projectAtom);
+  const [projects, setProjects] = useAtom(projectAtom);
   const [projectSave, setProjectSave] = useAtom(projectSaveAtom);
   const items = useMemo(() => {
     if (!userInfo?.uid) {
@@ -65,6 +65,27 @@ export default function Page() {
   }, [projects, projectSave, userInfo?.uid]);
 
   const [activeTab, setActiveTab] = useState<string>();
+
+  // fetch projects from Firebase
+  useEffect(() => {
+    const fetchProjects = async (uid: string) => {
+      try {
+        const fetchedProjects = await firebase.getProjects(uid);
+        let fetchedProjectsArr: IProject[] = [];
+        Object.values(fetchedProjects).forEach((item: any) => {
+          fetchedProjectsArr.push(item)
+        });
+        setProjects(fetchedProjectsArr);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+    // fetch projects from Firebase if there are no projects and user is logged in
+    if (projects.length === 0 && userInfo?.uid) {
+      fetchProjects(userInfo?.uid);
+    }
+  }, []);
+  
   useEffect(() => {
     if (!userInfo?.uid) {
       setActiveTab(void 0)
@@ -72,6 +93,7 @@ export default function Page() {
       setActiveTab(`${projects[0].key}`)
     }
   }, [projects, userInfo?.uid])
+
   let project = useMemo(() => {
     let index = projects.findIndex(({ key }) => {
       return `${key}` === `${activeTab}`
@@ -86,7 +108,7 @@ export default function Page() {
       message.warning("Please log in to your account.")
       return;
     }
-    setProject([{ key: uuid(), label: `project ${projects.length}` }, ...projects])
+    setProjects([{ key: uuid(), label: `project ${projects.length}` }, ...projects])
   }
 
   const [saveLoading, setSaveLoading] = useState(false);
@@ -118,7 +140,6 @@ export default function Page() {
     } catch (error) {
       message.error((error as any).message)
     } finally {
-
       setSaveLoading(false)
     }
   }
