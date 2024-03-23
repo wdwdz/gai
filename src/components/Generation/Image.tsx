@@ -21,44 +21,11 @@ interface IProps {
 const Component: FC<IProps> = ({ project }) => {
   let [loading, setLoading] = useState(false);
   let [inPaint, setInPaint] = useState(false);
-  let [imgs, setImgs] = useState<{ [index: string]: IImages }>({});
-  let [fileList, setFileList] = useState<UploadFile[]>([]);
-
   let [projects, setProject] = useAtom(projectAtom);
   let [settingInfo,] = useAtom(settingAtom);
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
   let [paramsData, setParamsData] = useAtom(paramsDataAtom);
   let [selectImage,] = useAtom(selectImageAtom);
-
-  // update record selected image list
-  let imgList = useMemo(() => {
-    let data = {
-      ...imgs,
-      ...selectImage
-    }
-    Object.keys(imgs).forEach(key => {
-      data[key].selected = imgs[key].selected
-    })
-    return data
-  }, [imgs, selectImage])
-
-  // selected image info 
-  let selectImgInfo = useMemo(() => {
-    return Object.values(imgs).filter(item => !!item.selected)[0];
-  }, [imgs])
-
-  let disableVariationBtn = useMemo(() => {
-    if (fileList.length) {
-      return false;
-    }
-    if (selectImgInfo) {
-      return !selectImgInfo?.src
-    }
-    return Object.values(imgs).every(item => {
-      return !item.src
-    })
-
-  }, [imgs, selectImgInfo, fileList])
 
   // update project record
   function updateProjectRecord(record: IRecord, params: Record<string, any>) {
@@ -157,17 +124,17 @@ const Component: FC<IProps> = ({ project }) => {
 
       if (inPaint) {
         let image = "";
-        if (selectImgInfo) {
-          image = selectImgInfo.src;
-          from = ['index', selectImgInfo.index].join('_')
+        if (selectImgInfo.length) {
+          image = selectImgInfo.map(item => item.src)[0];
+          from = ['index', selectImgInfo[0].index].join('_')
         }
         if (!image) {
           message.warning("Please select a picture to enlarge")
           return;
         }
         // generate inpaint image for masking
-        let canvas = selectImgInfo.canvas;
-        let canvasWrapperId = selectImgInfo.canvasWrapperId;
+        let canvas = selectImgInfo[0].canvas;
+        let canvasWrapperId = selectImgInfo[0].canvasWrapperId;
         let canvasWrapper = document.getElementById(canvasWrapperId) as HTMLDivElement;
         let mask = canvas.toDataURL('image/png');
         canvas.isDrawingMode = false;
@@ -186,7 +153,7 @@ const Component: FC<IProps> = ({ project }) => {
           from,
           label: [CLICK_TYPES.i].join(':'),
           prompt: "",
-          imgs: [selectImgInfo].map(item => {
+          imgs: [...selectImgInfo].map(item => {
             let data = response[0];
             let src = data.image;
             delete data.image
@@ -196,9 +163,9 @@ const Component: FC<IProps> = ({ project }) => {
         setInPaint(false);
       } else {
         let images = Object.values(imgs).map(item => item.src);
-        if (selectImgInfo) {
-          images = Array(IMAGES_NUMBER).fill(selectImgInfo.src);
-          from = ['index', selectImgInfo.index].join('_')
+        if (selectImgInfo.length) {
+          images = Array(IMAGES_NUMBER).fill(selectImgInfo.map(item => item.src)[0]);
+          from = ['index', selectImgInfo[0].index].join('_')
         }
         if (fileList.length) {
           fromId = id;
@@ -230,7 +197,7 @@ const Component: FC<IProps> = ({ project }) => {
     }
   }
   const handleInPaint = async () => {
-    const canvasWrapper = document.getElementById(`canvas-wrapper-${selectImgInfo.index}`) as HTMLDivElement;
+    const canvasWrapper = document.getElementById(`canvas-wrapper-${selectImgInfo[0].index}`) as HTMLDivElement;
     if (inPaint) {
       canvasWrapper.style.display = 'none';
       setInPaint(false);
@@ -240,16 +207,16 @@ const Component: FC<IProps> = ({ project }) => {
     if (!project.data) { return; }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
-    if (selectImgInfo) {
-      image = selectImgInfo.src;
-      from = ['index', selectImgInfo.index].join('_')
+    if (selectImgInfo.length) {
+      image = selectImgInfo.map(item => item.src)[0];
+      from = ['index', selectImgInfo[0].index].join('_')
     };
     if (!image) {
       message.warning("Please select a picture to inpaint")
       return;
     }
     canvasWrapper.style.display = 'block';
-    const fabricCanvas = selectImgInfo.canvas;
+    const fabricCanvas = selectImgInfo[0].canvas;
     fabricCanvas.clear();
     fabricCanvas.isDrawingMode = true;
     // // Set drawing properties
@@ -262,9 +229,9 @@ const Component: FC<IProps> = ({ project }) => {
     if (!project.data) { return; }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
-    if (selectImgInfo) {
-      image = selectImgInfo.src;
-      from = ['index', selectImgInfo.index].join('_')
+    if (selectImgInfo.length) {
+      image = selectImgInfo.map(item => item.src)[0];
+      from = ['index', selectImgInfo[0].index].join('_')
     }
     if (!image) {
       message.warning("Please select a picture to enlarge")
@@ -287,7 +254,7 @@ const Component: FC<IProps> = ({ project }) => {
         from,
         label: [CLICK_TYPES.s].join(':'),
         prompt: "",
-        imgs: [selectImgInfo].map(item => {
+        imgs: [...selectImgInfo].map(item => {
           let data = datas[0];
           let src = data.image;
           delete data.image
@@ -308,6 +275,12 @@ const Component: FC<IProps> = ({ project }) => {
     let prompt = event.target.value;
     updateProjectPrompt(prompt)
   }
+  // image list (type object {})
+  let [imgs, setImgs] = useState<{ [index: string]: IImages }>({});
+  // selected image info 
+  let selectImgInfo = useMemo(() => {
+    return Object.values(imgs).filter(item => !!item.selected)
+  }, [imgs])
 
   //  update image list
   useEffect(() => {
@@ -323,9 +296,10 @@ const Component: FC<IProps> = ({ project }) => {
       }).reverse().forEach(_imgs => {
         _imgs.forEach(img => {
           setImgs(imgs => {
+            let imgSelected = img.index === selectImgInfo[0]?.index;
             return {
               ...imgs,
-              [img.index]: { ...img, selected: img.selected ?? false}
+              [img.index]: { ...img, selected: imgSelected}
             }
           })
         })
@@ -336,7 +310,17 @@ const Component: FC<IProps> = ({ project }) => {
       setImgs({})
     }
   }, [project]);
-
+  // update record selected image list
+  let imgList = useMemo(() => {
+    let data = {
+      ...imgs,
+      ...selectImage
+    }
+    Object.keys(imgs).forEach(key => {
+      data[key].selected = imgs[key].selected
+    })
+    return data
+  }, [imgs, selectImage])
   // image component props
   const getImgProps = (img: IImages, index: number): ImageProps => {
     return {
@@ -365,18 +349,19 @@ const Component: FC<IProps> = ({ project }) => {
       Object.values(imgs).forEach(item => item.selected = false)
     }
     img.selected = !selected;
-    const canvasId = `canvas-${index}`
-    const canvasWrapper = document.getElementById(`canvas-wrapper-${index}`) as HTMLDivElement;
-    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    if (!canvas || !img.canvas) {
-      const newCanvas = document.createElement("canvas");
-      newCanvas.id = canvasId;
-      canvasWrapper.appendChild(newCanvas);
-      const fabricCanvas = new fabric.Canvas(newCanvas, {width: 300, height: 300});
-      img.canvas = fabricCanvas;
-      img.canvasWrapperId = `canvas-wrapper-${index}`;
+    if (img.selected) {
+      const canvasId = `canvas-${index}`
+      const canvasWrapper = document.getElementById(`canvas-wrapper-${index}`) as HTMLDivElement;
+      const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+      if (!canvas || !img.canvas) {
+        const newCanvas = document.createElement("canvas");
+        newCanvas.id = canvasId;
+        canvasWrapper.appendChild(newCanvas);
+        const fabricCanvas = new fabric.Canvas(newCanvas, {width: 300, height: 300});
+        img.canvas = fabricCanvas;
+        img.canvasWrapperId = `canvas-wrapper-${index}`;
+      }
     }
-
     setImgs({
       ...imgs,
       [index]: img
@@ -385,6 +370,7 @@ const Component: FC<IProps> = ({ project }) => {
 
   // =================================================================
   type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const handleBeforeUpload = (file: FileType) => {
     let { state, message: msg } = limitImage(file)
     if (!state) {
@@ -440,6 +426,20 @@ const Component: FC<IProps> = ({ project }) => {
     {fileList.length >= IMAGES_NUMBER ? null : UploadBtnElement}
   </Upload>
 
+
+  let disableVariationBtn = useMemo(() => {
+    if (fileList.length) {
+      return false;
+    }
+    if (selectImgInfo.length) {
+      return !selectImgInfo[0]?.src
+    }
+    return Object.values(imgs).every(item => {
+      return !item.src
+    })
+
+  }, [imgs, selectImgInfo, fileList])
+
   return (<div style={{ flex: 1 }}>
     <Space direction="vertical" style={{ width: "100%" }} align='start'>
       <Space align="start" direction="vertical">
@@ -454,9 +454,9 @@ const Component: FC<IProps> = ({ project }) => {
             <Button disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
           </Tooltip>
 
-          <Button disabled={loading || !selectImgInfo || inPaint} onClick={handleEnlarge}>Enlarge</Button>
+          <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button>
           <Button 
-            disabled={loading || !selectImgInfo}
+            disabled={loading || !(selectImgInfo.length)}
             onClick={handleInPaint}
             style={inPaint ? { backgroundColor: 'blue', color: 'white' } : {}}
           >Paint</Button>
