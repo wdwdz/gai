@@ -85,6 +85,11 @@ export const getRefData = ({ path, uid }: { path: string, uid: string }) => {
   let ref = getDbRef({ path, uid });
   return get(ref).then(data => data.exists() ? data.val() : null)
 }
+ 
+export const getProjects = async (uid: string) => {
+  let projectsRef = ref(db, [version, 'server', uid, 'projects'].join("/"));
+  return get(projectsRef).then(data => data.exists() ? data.val() : null);
+}
 
 // get access codes
 export const getAccessCodeRef = async () => {
