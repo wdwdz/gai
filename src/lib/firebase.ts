@@ -88,7 +88,22 @@ export const getRefData = ({ path, uid }: { path: string, uid: string }) => {
  
 export const getProjects = async (uid: string) => {
   let projectsRef = ref(db, [version, 'server', uid, 'projects'].join("/"));
-  return get(projectsRef).then(data => data.exists() ? data.val() : null);
+  let recordsRef = ref(db, [version, 'server', uid, 'records'].join("/"));
+
+  return get(projectsRef)
+    .then(async data => {
+      let projects = data.exists() ? data.val() : null
+      const records = await get(recordsRef);
+      let recordsData = records.exists() ? records.val() : null;
+      // push records to projects
+      if (projects && recordsData) {
+        Object.keys(projects).forEach(key => {
+          let project = projects[key];
+          project.records = recordsData[key] || [];
+        });
+      }
+      return projects;
+    });
 }
 
 // get access codes
