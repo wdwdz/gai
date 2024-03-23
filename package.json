@@ -13,6 +13,7 @@
     "antd": "^5.13.2",
     "dayjs": "^1.11.10",
     "fabric": "5.3.0",
+    "canvas": "https://registry.yarnpkg.com/@favware/skip-dependency/-/skip-dependency-1.2.1.tgz",
     "firebase": "^10.7.2",
     "firebase-admin": "^12.0.0",
     "form-data": "^4.0.0",
