@@ -215,13 +215,18 @@ const Component: FC<IProps> = ({ project }) => {
       message.warning("Please select a picture to inpaint")
       return;
     }
-    canvasWrapper.style.display = 'block';
-    const fabricCanvas = selectImgInfo[0].canvas;
-    fabricCanvas.clear();
-    fabricCanvas.isDrawingMode = true;
-    // // Set drawing properties
-    fabricCanvas.freeDrawingBrush.color = 'white';
-    fabricCanvas.freeDrawingBrush.width = 20;
+    try {
+      canvasWrapper.style.display = 'block';
+      const fabricCanvas = selectImgInfo[0].canvas;
+      fabricCanvas.clear();
+      fabricCanvas.isDrawingMode = true;
+      // // Set drawing properties
+      fabricCanvas.freeDrawingBrush.color = 'white';
+      fabricCanvas.freeDrawingBrush.width = 20;
+    } catch (error) {
+      canvasWrapper.style.display = 'none';
+      message.error("Error initializing inpaint, please refresh browser and try again.")
+    }
   }
 
   // selection button event
