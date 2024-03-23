@@ -45,6 +45,11 @@ export async function compressImage(base64: string) {
   if (Math.max(...[width, height]) < 1024) {
     size = 300
   }
+  if (Math.max(...[width, height]) >= 2048) {
+    size = 600;
+    width = width * 0.5;
+    height = height * 0.5;
+  }
   return await filetoDataURL(await compressAccurately(file, {
     width,
     height,
