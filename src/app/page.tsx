@@ -191,7 +191,7 @@ export default function Page() {
             </Col>
           </Row>
         </div>
-        {accessCode?.showPromptHistory ? (
+        {!accessCode || accessCode?.showPromptHistory ? (
           <div
             style={{
               maxWidth: 1400, margin: "auto",
