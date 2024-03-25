@@ -152,7 +152,7 @@ const Component: FC<IProps> = ({ project }) => {
           type: CLICK_TYPES.i,
           from,
           label: [CLICK_TYPES.i].join(':'),
-          prompt: "",
+          prompt: project.data.prompt,
           imgs: [...selectImgInfo].map(item => {
             let data = response[0];
             let src = data.image;
