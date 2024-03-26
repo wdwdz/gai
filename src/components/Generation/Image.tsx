@@ -139,7 +139,6 @@ const Component: FC<IProps> = ({ project }) => {
         let canvasWrapperId = `canvas-wrapper-${imgindex}`;
         let canvasWrapper = document.getElementById(canvasWrapperId) as HTMLDivElement;
         let mask = canvas.toDataURL('image/png');
-        debugger
         canvas.isDrawingMode = false;
         params.image = image;
         params.mask = mask;
@@ -160,7 +159,7 @@ const Component: FC<IProps> = ({ project }) => {
             let data = response[0];
             let src = data.image;
             delete data.image
-            return { ...data, index: item.index, src, canvas: item.canvas, canvasWrapperId: item.canvasWrapperId}
+            return { ...data, index: item.index, src }
           })
         }, params)
         setInPaint(false);
@@ -286,6 +285,7 @@ const Component: FC<IProps> = ({ project }) => {
   }
   // image list (type object {})
   let [imgs, setImgs] = useState<{ [index: string]: IImages }>({});
+
   // selected image info 
   let selectImgInfo = useMemo(() => {
     return Object.values(imgs).filter(item => !!item.selected)
@@ -300,19 +300,21 @@ const Component: FC<IProps> = ({ project }) => {
         setSelectRecord(records[0]);
       }
       setImgs(() => ({}));
-      records.map(item => {
+      
+      let recordImgs = records.map(item => {
         return item.imgs
-      }).reverse().forEach(_imgs => {
-        _imgs.forEach(img => {
-          setImgs(imgs => {
-            let imgSelected = img.index === selectImgInfo[0]?.index;
-            return {
-              ...imgs,
-              [img.index]: { ...img, selected: imgSelected}
-            }
-          })
+      }).reverse();
+
+      if (recordImgs) {
+        let data = {
+          ...imgs,
+          ...selectImage
+        };
+        Object.values(data).forEach((item, index) => {
+          item.selected = item.selected || false;
         })
-      })
+        setImgs(data);
+      }
 
     } else {
       setSelectRecord(null);
@@ -341,22 +343,19 @@ const Component: FC<IProps> = ({ project }) => {
     setImgCanvases(canvases); 
   }, [project]);
 
-  // initialize img canvases
-  useEffect(() => {
-    
-  }, [project])
-
   // update record selected image list
   let imgList = useMemo(() => {
     let data = {
       ...imgs,
       ...selectImage
     }
+    setImgs(data)
     Object.keys(imgs).forEach(key => {
       data[key].selected = imgs[key].selected
     })
     return data
-  }, [imgs, selectImage])
+  }, [selectImage])
+
   // image component props
   const getImgProps = (img: IImages, index: number): ImageProps => {
     return {
