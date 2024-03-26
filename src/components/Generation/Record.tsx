@@ -1,6 +1,6 @@
 import { useMemo, FC } from "react";
 import { Space, Timeline, Empty, Image, Button } from "antd"
-import { selectRecordAtom, useAtom, IProject, IImages, IRecord } from "@/store/index";
+import { selectRecordAtom, imageCanvasAtom, useAtom, IProject, IImages, IRecord } from "@/store/index";
 import css from "@/page.module.scss"
 import { ACTION_TYPE } from "@/config/enums"
 
@@ -18,6 +18,7 @@ interface IProps {
 }
 const Component: FC<IProps> = ({ project }) => {
   let [, setSelectRecord] = useAtom(selectRecordAtom);
+  let [imgCanvases,] = useAtom(imageCanvasAtom);
   let records = useMemo(() => {
     return project?.data?.records ?? []
   }, [project])
@@ -42,7 +43,16 @@ const Component: FC<IProps> = ({ project }) => {
   }, [records]);
 
   const handleSelectImage = (record:IRecord) => {
-    setSelectRecord(record)
+    clearCanvas();
+    setSelectRecord(record);
+  }
+
+  const clearCanvas = () => {
+    imgCanvases.forEach(canvas => {
+      if (canvas) {
+        canvas.clear();
+      }
+    })
   }
 
   function getRecordLabel(record: IRecord) {
