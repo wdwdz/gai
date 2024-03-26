@@ -73,6 +73,7 @@ export const selectImageAtom = atom<{ [index: string]: IImages }>((get) => {
   }, {})
   return data
 })
+export const imageCanvasAtom = atom<fabric.Canvas[]>([]);
 
 
 

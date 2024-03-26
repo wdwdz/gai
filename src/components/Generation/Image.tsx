@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { useState, useMemo, useEffect, FC } from "react"
 import { Space, Image, Button, Spin, Empty, Input, message, ImageProps, Upload, UploadFile, UploadProps, GetProp, Tooltip } from "antd"
 import { PlusOutlined } from "@ant-design/icons"
-import { useAtom, projectAtom, selectImageAtom, selectRecordAtom, paramsDataAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
+import { useAtom, projectAtom, selectImageAtom, imageCanvasAtom, selectRecordAtom, paramsDataAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
 import { getPromptAndWeight, getSettingValue, getBase64, limitImage, uuid } from "@/utils/index"
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
@@ -26,6 +26,7 @@ const Component: FC<IProps> = ({ project }) => {
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
   let [paramsData, setParamsData] = useAtom(paramsDataAtom);
   let [selectImage,] = useAtom(selectImageAtom);
+  let [imgCanvases, setImgCanvases] = useAtom(imageCanvasAtom);
 
   // update project record
   function updateProjectRecord(record: IRecord, params: Record<string, any>) {
@@ -133,10 +134,12 @@ const Component: FC<IProps> = ({ project }) => {
           return;
         }
         // generate inpaint image for masking
-        let canvas = selectImgInfo[0].canvas;
-        let canvasWrapperId = selectImgInfo[0].canvasWrapperId;
+        let imgindex = selectImgInfo[0].index;
+        let canvas = imgCanvases[imgindex] as any;
+        let canvasWrapperId = `canvas-wrapper-${imgindex}`;
         let canvasWrapper = document.getElementById(canvasWrapperId) as HTMLDivElement;
         let mask = canvas.toDataURL('image/png');
+        debugger
         canvas.isDrawingMode = false;
         params.image = image;
         params.mask = mask;
@@ -207,9 +210,10 @@ const Component: FC<IProps> = ({ project }) => {
     if (!project.data) { return; }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
+    let imgIndex = selectImgInfo[0].index;
     if (selectImgInfo.length) {
       image = selectImgInfo.map(item => item.src)[0];
-      from = ['index', selectImgInfo[0].index].join('_')
+      from = ['index', imgIndex].join('_')
     };
     if (!image) {
       message.warning("Please select a picture to inpaint")
@@ -217,7 +221,7 @@ const Component: FC<IProps> = ({ project }) => {
     }
     try {
       canvasWrapper.style.display = 'block';
-      const fabricCanvas = selectImgInfo[0].canvas;
+      const fabricCanvas = imgCanvases[imgIndex];
       fabricCanvas.clear();
       fabricCanvas.isDrawingMode = true;
       // // Set drawing properties
@@ -314,7 +318,34 @@ const Component: FC<IProps> = ({ project }) => {
       setSelectRecord(null);
       setImgs({})
     }
+    // Check if necessary divs are available
+    const canvasWrapperAvailable = !!document.getElementById(`canvas-wrapper-0`);
+    if (!canvasWrapperAvailable) {
+      return;
+    }
+    // Initialize canvases if doesn't exist
+    if (imgCanvases.length) {
+      return;
+    }
+    let canvases: fabric.Canvas[] = [];
+    for (let index = 0; index < 2; index++) {
+      const canvasId = `canvas-${index}`
+      const canvasWrapperId = `canvas-wrapper-${index}`
+      const canvasWrapper = document.getElementById(canvasWrapperId) as HTMLDivElement;
+      const newCanvas = document.createElement("canvas");
+      newCanvas.id = canvasId;
+      canvasWrapper.appendChild(newCanvas);
+      const fabricCanvas = new fabric.Canvas(newCanvas, {width: 300, height: 300});
+      canvases.push(fabricCanvas);
+    }
+    setImgCanvases(canvases); 
   }, [project]);
+
+  // initialize img canvases
+  useEffect(() => {
+    
+  }, [project])
+
   // update record selected image list
   let imgList = useMemo(() => {
     let data = {
@@ -354,19 +385,6 @@ const Component: FC<IProps> = ({ project }) => {
       Object.values(imgs).forEach(item => item.selected = false)
     }
     img.selected = !selected;
-    if (img.selected) {
-      const canvasId = `canvas-${index}`
-      const canvasWrapper = document.getElementById(`canvas-wrapper-${index}`) as HTMLDivElement;
-      const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-      if (!canvas || !img.canvas) {
-        const newCanvas = document.createElement("canvas");
-        newCanvas.id = canvasId;
-        canvasWrapper.appendChild(newCanvas);
-        const fabricCanvas = new fabric.Canvas(newCanvas, {width: 300, height: 300});
-        img.canvas = fabricCanvas;
-        img.canvasWrapperId = `canvas-wrapper-${index}`;
-      }
-    }
     setImgs({
       ...imgs,
       [index]: img

@@ -28,15 +28,6 @@ export async function saveProject(projects: any[], uid: string) {
     data.forEach(({ key, records }) => {
       _arr.push(...records.map((item: any, index: number) => {
         _path = ['records', key, index].join('/');
-        // remove canvas and canvasWrapper when saving into db
-        item.imgs.forEach((img: any) => {
-          if (img.hasOwnProperty('canvas')) {
-            delete img.canvas;
-          }
-          if (img.hasOwnProperty('canvasWrapperId')) {
-            delete img.canvasWrapperId;
-          }
-        });
         return updateRefData({ path: _path, data: item, uid })
       }))
     })
