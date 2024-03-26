@@ -305,7 +305,7 @@ const Component: FC<IProps> = ({ project }) => {
         return item.imgs
       }).reverse();
 
-      if (recordImgs) {
+      if (recordImgs.length) {
         let data = {
           ...imgs,
           ...selectImage
@@ -313,6 +313,17 @@ const Component: FC<IProps> = ({ project }) => {
         Object.values(data).forEach((item, index) => {
           item.selected = item.selected || false;
         })
+        // fill in the image data if one is empty
+        if (Object.keys(data).length < IMAGES_NUMBER) {
+          for (let i = 0; i < IMAGES_NUMBER; i++) {
+            if (data[i]) { continue };
+            data[i] = {
+              index: i,
+              src: recordImgs[0][0].src,
+              selected: false
+            }
+          }
+        }
         setImgs(data);
       }
 

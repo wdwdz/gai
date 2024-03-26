@@ -72,7 +72,7 @@ export default function Page() {
       try {
         const fetchedProjects = await firebase.getProjects(uid);
         let fetchedProjectsArr: IProject[] = [];
-        Object.values(fetchedProjects).forEach((item: any) => {
+        Object.values(fetchedProjects)?.forEach((item: any) => {
           fetchedProjectsArr.push(item)
         });
         setProjects(fetchedProjectsArr);
