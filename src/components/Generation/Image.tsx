@@ -1,8 +1,9 @@
 import dayjs from 'dayjs'
+import cloneDeep from "lodash/cloneDeep"
 import { useState, useMemo, useEffect, FC } from "react"
 import { Space, Image, Button, Spin, Empty, Input, message, ImageProps, Upload, UploadFile, UploadProps, GetProp, Tooltip } from "antd"
 import { PlusOutlined } from "@ant-design/icons"
-import { useAtom, projectAtom, selectImageAtom, imageCanvasAtom, selectRecordAtom, paramsDataAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
+import { useAtom, userInfoAtom, projectAtom, selectImageAtom, imageCanvasAtom, selectRecordAtom, paramsDataAtom, settingAtom, IProject, IRecord, IImages } from "@/store/index"
 import { getPromptAndWeight, getSettingValue, getBase64, limitImage, uuid } from "@/utils/index"
 import * as api from "@/apis/index"
 import { IMAGES_NUMBER } from "@/config/index"
@@ -21,6 +22,7 @@ interface IProps {
 const Component: FC<IProps> = ({ project }) => {
   let [loading, setLoading] = useState(false);
   let [inPaint, setInPaint] = useState(false);
+  let [userInfo,] = useAtom(userInfoAtom);
   let [projects, setProject] = useAtom(projectAtom);
   let [settingInfo,] = useAtom(settingAtom);
   let [selectRecord, setSelectRecord] = useAtom(selectRecordAtom);
@@ -29,7 +31,7 @@ const Component: FC<IProps> = ({ project }) => {
   let [imgCanvases, setImgCanvases] = useAtom(imageCanvasAtom);
 
   // update project record
-  function updateProjectRecord(record: IRecord, params: Record<string, any>) {
+  async function updateProjectRecord(record: IRecord, params: Record<string, any>) {
     if (project.index === -1) {
       message.warning("Please create new project.")
       return;
@@ -46,6 +48,7 @@ const Component: FC<IProps> = ({ project }) => {
     setProject([...projects])
     setSelectRecord(record);
     setParamsData({ ...paramsData, [record.id]: params })
+    await autoSaveProject(record);
   }
   // update project prompt
   function updateProjectPrompt(prompt: string) {
@@ -62,6 +65,26 @@ const Component: FC<IProps> = ({ project }) => {
     setProject([...projects])
   }
 
+  // project auto-save
+  const autoSaveProject = async (newRecord: any) => {
+    if (!userInfo?.uid) {
+      return;
+    }
+    let projectData = project.data;
+    if (!projectData) {
+      return;
+    }
+    if (!projectData.records) {
+      projectData.records = [];
+      projectData.records.push(newRecord);
+    } else {
+      projectData.records.push(newRecord);
+    }
+    await api.save({
+      uid: userInfo.uid, projects: [cloneDeep(project.data)]
+    });
+  }
+
   // =================================================================  
   // generation button event
   const handleGeneration = async () => {
@@ -71,6 +94,7 @@ const Component: FC<IProps> = ({ project }) => {
       message.warning("Prompt is required.")
       return;
     }
+    let newRecord;
     setLoading(true)
     try {
       let params = {
@@ -80,7 +104,7 @@ const Component: FC<IProps> = ({ project }) => {
       }
       let datas = await api.text2img(params);
       let id = uuid();
-      updateProjectRecord({
+      newRecord = {
         id,
         fromId: id,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -94,13 +118,13 @@ const Component: FC<IProps> = ({ project }) => {
           delete data.image
           return { ...data, index, src }
         })
-      }, params)
-
-      setLoading(false)
+      }
+      await updateProjectRecord(newRecord, params)
     } catch (error) {
       console.log(error)
-      setLoading(false)
       message.error((error as any).message)
+    } finally {
+      setLoading(false)
     }
 
   }
@@ -122,6 +146,7 @@ const Component: FC<IProps> = ({ project }) => {
       let from = RECORD_FROM_TYPE.none;
       let id = uuid();
       let fromId = selectRecord ? selectRecord.fromId ?? id : id;
+      let newRecord;
 
       if (inPaint) {
         let image = "";
@@ -147,7 +172,7 @@ const Component: FC<IProps> = ({ project }) => {
         delete params.mask;
         canvas.clear();
         canvasWrapper.style.display = 'none';
-        updateProjectRecord({
+        newRecord = {
           id,
           fromId,
           date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -161,7 +186,8 @@ const Component: FC<IProps> = ({ project }) => {
             delete data.image
             return { ...data, index: item.index, src }
           })
-        }, params)
+        };
+        await updateProjectRecord(newRecord, params)
         setInPaint(false);
       } else {
         let images = Object.values(imgs).map(item => item.src);
@@ -176,7 +202,7 @@ const Component: FC<IProps> = ({ project }) => {
         }
         params.images = images;
         let datas = await api.img2img(params);
-        updateProjectRecord({
+        newRecord = {
           id,
           fromId,
           date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -190,7 +216,8 @@ const Component: FC<IProps> = ({ project }) => {
             delete data.image
             return { ...data, index, src }
           })
-        }, params)
+        };
+        await updateProjectRecord(newRecord, params)
       }
     } catch (error) {
       message.error((error as any).message)
@@ -198,6 +225,7 @@ const Component: FC<IProps> = ({ project }) => {
       setLoading(false)
     }
   }
+  // inpaint button event
   const handleInPaint = async () => {
     const canvasWrapper = document.getElementById(`canvas-wrapper-${selectImgInfo[0].index}`) as HTMLDivElement;
     if (inPaint) {
@@ -231,7 +259,6 @@ const Component: FC<IProps> = ({ project }) => {
       message.error("Error initializing inpaint, please refresh browser and try again.")
     }
   }
-
   // selection button event
   const handleEnlarge = async () => {
     if (!project.data) { return; }
@@ -254,7 +281,7 @@ const Component: FC<IProps> = ({ project }) => {
 
       let id = uuid();
       let fromId = selectRecord ? selectRecord.fromId ?? id : id;
-      updateProjectRecord({
+      let newRecord = {
         id,
         fromId,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -268,7 +295,8 @@ const Component: FC<IProps> = ({ project }) => {
           delete data.image
           return { ...data, index: item.index, src }
         })
-      }, params)
+      }
+      await updateProjectRecord(newRecord, params)
       setLoading(false)
     } catch (error) {
       setLoading(false)
