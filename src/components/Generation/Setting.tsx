@@ -9,8 +9,11 @@ const Component: FC<{ open: boolean, close: () => void }> = ({ open, close }) =>
 
   const handleChange = ()=>{
     let value = formRef.getFieldsValue();
-    if (!value.style_preset) delete value.style_preset
-    setSettingInfo({...settingInfo,...value})
+    let newSettings = {...settingInfo,...value};
+    if (!value.style_preset) {
+      delete newSettings.style_preset
+    }
+    setSettingInfo(newSettings)
   }
   return <Drawer open={open} onClose={() => close()} title="Setting" width={500} >
     <Form
