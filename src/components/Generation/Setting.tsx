@@ -34,6 +34,9 @@ const Component: FC<{ open: boolean, close: () => void }> = ({ open, close }) =>
       <Form.Item label="Steps" name='steps'>
         <InputNumber min={10} max={50} style={{width:"100%"}} onChange={handleChange}/>
       </Form.Item>
+      <Form.Item label="CFG Scale" name='cfg_scale'>
+        <InputNumber min={0} max={35} style={{width:"100%"}} onChange={handleChange}/>
+      </Form.Item>
       <Form.Item label="Style preset" name='style_preset'>
         <Select options={STYLE_PRESET.map(value=>({value,label:value}))} onChange={handleChange} allowClear/>
       </Form.Item>
