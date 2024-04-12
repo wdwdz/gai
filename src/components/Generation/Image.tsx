@@ -369,11 +369,13 @@ const Component: FC<IProps> = ({ project }) => {
 
   // image component props
   const getImgProps = (img: IImages, index: number): ImageProps => {
+    // setImgs from useEffect is asynchorous, so we need to check if it's empty
+    let src = Object.keys(imgs).length === 0 ? '' : img?.src;
     return {
       width: 300,
       height: 300,
       preview: false,
-      src: img?.src,
+      src: src,
       alt: "",
       style: {
         borderWidth: img?.selected ? 3 : 0,
