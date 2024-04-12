@@ -174,9 +174,9 @@ export default function Page() {
         <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
         {userInfo?.uid ? <>
           <Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
-            <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Saved list</Button>
+            <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Submit list</Button>
           </Dropdown>
-          <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Save</Button></> : null}
+          <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Submit</Button></> : null}
 
         <Space style={{ marginLeft: 15 }} >
           {userInfo?.uid ? 
