@@ -479,7 +479,7 @@ const Component: FC<IProps> = ({ project }) => {
         <span>Prompts:</span>
         <Space align="start">
           <TextArea rows={5} value={project.data?.prompt ?? ''} onChange={handlePromptChange} style={{ width: 400 }} />
-          {UploadElement}
+          {/* {UploadElement} */}
         </Space>
         <Space align="start">
           <Button disabled={loading || !project.data?.prompt || inPaint} onClick={handleGeneration}>Generation</Button>
@@ -487,7 +487,7 @@ const Component: FC<IProps> = ({ project }) => {
             <Button disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
           </Tooltip>
 
-          <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button>
+          {/* <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button> */}
           <Button 
             disabled={loading || !(selectImgInfo.length)}
             onClick={handleInPaint}
