@@ -48,6 +48,7 @@ const Component: FC<IProps> = ({ project }) => {
     setProject([...projects])
     setSelectRecord(record);
     setParamsData({ ...paramsData, [record.id]: params })
+    setLoading(false)
     await autoSaveProject(record);
   }
   // update project prompt
@@ -95,8 +96,8 @@ const Component: FC<IProps> = ({ project }) => {
       return;
     }
     let newRecord;
-    setLoading(true)
     try {
+      setLoading(true)
       let params = {
         ...getSettingValue(settingInfo),
         samples: IMAGES_NUMBER,
@@ -126,7 +127,6 @@ const Component: FC<IProps> = ({ project }) => {
     } finally {
       setLoading(false)
     }
-
   }
   // variation button event
   const handleVariation = async () => {
@@ -172,6 +172,7 @@ const Component: FC<IProps> = ({ project }) => {
         delete params.mask;
         canvas.clear();
         canvasWrapper.style.display = 'none';
+        setInPaint(false);
         newRecord = {
           id,
           fromId,
@@ -188,7 +189,6 @@ const Component: FC<IProps> = ({ project }) => {
           })
         };
         await updateProjectRecord(newRecord, params)
-        setInPaint(false);
       } else {
         let images = Object.values(imgs).map(item => item.src);
         if (selectImgInfo.length) {
