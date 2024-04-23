@@ -82,7 +82,12 @@ const Component: FC<IProps> = ({ project }) => {
       projectData.records.push(newRecord);
     }
     await api.save({
-      uid: userInfo.uid, projects: [cloneDeep(project.data)]
+      uid: userInfo.uid,
+      projects: [cloneDeep(project.data)],
+      userInfo: {
+        displayName: userInfo?.displayName ?? 'Anonymous',
+        email: userInfo?.email ?? ''
+      }
     });
   }
 
