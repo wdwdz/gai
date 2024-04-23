@@ -32,13 +32,14 @@ export async function img2imgUpscale(data: any) {
 export async function save(data: any) {
   let uid: string = data.uid;
   let projects: any[] = data.projects;
+  let userInfo: any = data.userInfo;
   if (!uid) {
     return Promise.reject("Please login in your account.")
   }
   if (!projects.length) {
     return Promise.reject("PPlease select the project first and then save it.")
   }
-  return await saveProject(projects, uid)
+  return await saveProject(projects, uid, userInfo)
 }
 
 export { }

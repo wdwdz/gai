@@ -133,7 +133,12 @@ export default function Page() {
     try {
       setSaveLoading(true)
       await api.save({
-        uid: userInfo.uid, projects: [cloneDeep(project.data)]
+        uid: userInfo.uid,
+        projects: [cloneDeep(project.data)],
+        userInfo: {
+          displayName: userInfo?.displayName ?? 'Anonymous',
+          email: userInfo?.email ?? ''
+        }
       });
       updateProjectSave(true)
       message.success("Save success")

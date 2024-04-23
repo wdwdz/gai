@@ -1,6 +1,6 @@
 import { updateRefData } from './firebase'
 import { resError, resSuccess } from "@/utils/index"
-export async function saveProject(projects: any[], uid: string) {
+export async function saveProject(projects: any[], uid: string, userInfo: any) {
   let _path = ''
   let _records: any = [];
   let _projects = []
@@ -33,12 +33,15 @@ export async function saveProject(projects: any[], uid: string) {
     })
     return _arr
   }
+  function _setUserInfo(data: any) {
+    _path = ['userInfo'].join('/');
+    return updateRefData({ path: _path, data, uid })
+  }
   try {
-    await Promise.all([..._setProjects(_projects), ..._setRecords(_records)])
+    await Promise.all([_setUserInfo(userInfo), ..._setProjects(_projects), ..._setRecords(_records)])
     return resSuccess({ state: true })
   } catch (error) {
     console.log("saveProject ~ error:", error)
     return Promise.reject(resError(400, (error as any).message))
   }
-
 }
