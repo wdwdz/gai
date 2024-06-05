@@ -54,10 +54,13 @@ const Component: FC = () => {
 
   }
 
-  return (currentParams ? <Space direction='vertical' style={{ width: "100%" }} styles={{ item: { width: "100%" } }}>
-    <span>Settings:</span>
-    <Descriptions style={{ width: "100%" }} column={1} bordered items={getParamsData()} size="small" />
-  </Space> : null);
+  return (currentParams ? 
+  // <Space direction='vertical' style={{ width: "100%" }} styles={{ item: { width: "100%" } }}>
+  //   <span>Settings:</span>
+  //   <Descriptions style={{ width: "100%" }} column={1} bordered items={getParamsData()} size="small" />
+  // </Space>
+  <></>
+  : null);
 }
 
 export default Component

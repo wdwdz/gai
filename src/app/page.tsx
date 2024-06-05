@@ -177,11 +177,11 @@ export default function Page() {
           items={items} style={{ flex: 1, minWidth: 0 }}
         />
         <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
-        {userInfo?.uid ? <>
+        {/* {userInfo?.uid ? <>
           <Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
             <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Submit list</Button>
           </Dropdown>
-          <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Submit</Button></> : null}
+          <Button loading={saveLoading} title='Save project' onClick={handleSave} type="primary" style={{ marginLeft: 15 }}>Submit</Button></> : null} */}
 
         <Space style={{ marginLeft: 15 }} >
           {userInfo?.uid ? 
@@ -191,7 +191,7 @@ export default function Page() {
               </span>
             </Dropdown></> : 
             <Link style={{ color: "#fff" }} href="/login"><span style={{ color: "#fff" }} >Log in</span></Link>}
-            <a style={{ position: 'absolute', top: '50%', right: 0, padding: "0 15px", color: "#fff", fontSize: 20, transform: 'translateY(-50%)' }} title="Setting" onClick={() => setVisible(true)}><SettingFilled /></a>
+            {/* <a style={{ position: 'absolute', top: '50%', right: 0, padding: "0 15px", color: "#fff", fontSize: 20, transform: 'translateY(-50%)' }} title="Setting" onClick={() => setVisible(true)}><SettingFilled /></a> */}
         </Space>
       </Header>
       <Content

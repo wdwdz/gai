@@ -85,7 +85,7 @@ function Component() {
             <Input />
           </Form.Item>
 
-          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          {/* <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
             <span style={{ padding: '0.5rem', background: '#f0f0f0' }}>OR</span>
           </div>
 
@@ -113,7 +113,7 @@ function Component() {
             ]}
           >
             <Input.Password />
-          </Form.Item>
+          </Form.Item> */}
 
 
           <Form.Item>
@@ -122,7 +122,7 @@ function Component() {
                 <Button type="primary" htmlType="submit" loading={loading}>
                   Log in
                 </Button>
-                <Link href="/register"> Sign up</Link>
+                {/* <Link href="/register"> Sign up</Link> */}
               </Space>
             </Space>
           </Form.Item>
