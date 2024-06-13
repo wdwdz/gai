@@ -1,6 +1,6 @@
 import { http } from "@/utils/index"
 import { baseUrl } from "@/config/index"
-import { saveProject } from "@/lib/function";
+import { saveProject, trackEvent } from "@/lib/function";
 import { compressImage } from "@/utils/index"
 
 const base_url = baseUrl;
@@ -37,9 +37,11 @@ export async function save(data: any) {
     return Promise.reject("Please login in your account.")
   }
   if (!projects.length) {
-    return Promise.reject("PPlease select the project first and then save it.")
+    return Promise.reject("Please select the project first and then save it.")
   }
   return await saveProject(projects, uid, userInfo)
 }
-
+export async function track(event: any) {
+  return await trackEvent(event)
+}
 export { }

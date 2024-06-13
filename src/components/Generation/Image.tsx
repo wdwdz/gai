@@ -95,6 +95,19 @@ const Component: FC<IProps> = ({ project }) => {
   // generation button event
   const handleGeneration = async () => {
     if (!project.data) { return; }
+    // track generation click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Generation Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let text_prompts = getPromptAndWeight(project.data.prompt ?? '');
     if (!text_prompts.length) {
       message.warning("Prompt is required.")
@@ -136,7 +149,19 @@ const Component: FC<IProps> = ({ project }) => {
   // variation button event
   const handleVariation = async () => {
     if (!project.data) { return; }
-
+    // track variation click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Variation Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let text_prompts = getPromptAndWeight(project.data.prompt ?? '');
     if (!text_prompts.length) {
       message.warning("Prompt is required.")
@@ -240,6 +265,19 @@ const Component: FC<IProps> = ({ project }) => {
     }
     setInPaint(true);
     if (!project.data) { return; }
+    // track Paint click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Paint Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
     let imgIndex = selectImgInfo[0].index;
@@ -267,6 +305,19 @@ const Component: FC<IProps> = ({ project }) => {
   // selection button event
   const handleEnlarge = async () => {
     if (!project.data) { return; }
+    // track Enlarge click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Enlarge Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
     if (selectImgInfo.length) {
@@ -422,7 +473,7 @@ const Component: FC<IProps> = ({ project }) => {
     }
   }
   // selected image event
-  const handleSelectImage = (index: number) => {
+  const handleSelectImage = async (index: number) => {
     let img = imgList[index];
     if (!img || inPaint) { return }
     let selected = img.selected
@@ -434,6 +485,21 @@ const Component: FC<IProps> = ({ project }) => {
       ...imgs,
       [index]: img
     })
+    let target = img.selected ? 'Image Select' : 'Image Deselect'
+     // track image select/deselect click event
+     try {
+      await api.track({
+        type: "Click",
+        target,
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null,
+        imageIndex: index
+      })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   // =================================================================

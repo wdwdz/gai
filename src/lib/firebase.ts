@@ -81,6 +81,13 @@ export const updateRefData = ({ path, data, uid }: { path: string, data: any, ui
   let ref = getDbRef({ path, uid });
   return set(ref, data)
 }
+export const upsertArrayData = async ({ path, data, uid }: { path: string, data: any, uid: string }) => {
+  let ref = getDbRef({ path, uid });
+  let arrayData = await get(ref)
+  let array = arrayData.exists() ? arrayData.val() : [];
+  array.push(data);
+  return set(ref, array);
+}
 export const getRefData = ({ path, uid }: { path: string, uid: string }) => {
   let ref = getDbRef({ path, uid });
   return get(ref).then(data => data.exists() ? data.val() : null)

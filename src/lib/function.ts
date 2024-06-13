@@ -1,4 +1,4 @@
-import { updateRefData } from './firebase'
+import { updateRefData, upsertArrayData } from './firebase'
 import { resError, resSuccess } from "@/utils/index"
 export async function saveProject(projects: any[], uid: string, userInfo: any) {
   let _path = ''
@@ -42,6 +42,25 @@ export async function saveProject(projects: any[], uid: string, userInfo: any) {
     return resSuccess({ state: true })
   } catch (error) {
     console.log("saveProject ~ error:", error)
+    return Promise.reject(resError(400, (error as any).message))
+  }
+}
+
+export async function trackEvent(event: any) {
+  // {
+  //   "type": "click",
+  //   "target": "Generation Button" | "Select/Deselect Image" | ...,
+  //   "Timestamp": [TIMESTAMP],
+  //   "projectId": [PROJECT_ID],
+  //   "recordId": ["" | RECORD_ID],
+  //   "selectedImage": [null | 0 | 1],
+  // }
+  let _path = ['events'].join('/');
+  // insert event into the events array
+  try {
+    await upsertArrayData({ path: _path, data: event, uid: event.uid })
+    return resSuccess({ state: true })
+  } catch (error) {
     return Promise.reject(resError(400, (error as any).message))
   }
 }
