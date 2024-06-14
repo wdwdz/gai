@@ -42,6 +42,7 @@ export async function save(data: any) {
   return await saveProject(projects, uid, userInfo)
 }
 export async function track(event: any) {
+  event.timestamp = new Date().toISOString();
   return await trackEvent(event)
 }
 export { }
