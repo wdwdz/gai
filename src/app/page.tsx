@@ -2,7 +2,7 @@
 
 import cloneDeep from "lodash/cloneDeep"
 import { Layout, Dropdown, Menu, theme, Button, message, Space, Row, Col } from 'antd';
-import { useAtom, projectAtom, projectSaveAtom, userInfoAtom, selectRecordAtom, accessCodeAtom, IProject } from "../store"
+import { useAtom, projectAtom, joyrideAtom, projectSaveAtom, userInfoAtom, selectRecordAtom, accessCodeAtom, IProject } from "../store"
 import { useState, useMemo, useEffect } from "react";
 
 import { PlusOutlined, SettingFilled } from "@ant-design/icons"
@@ -158,6 +158,12 @@ export default function Page() {
 
   let [visible, setVisible] = useState(false)
 
+  let [, setJoyride] = useAtom(joyrideAtom);
+
+  const launchJoyride = () => {
+    setJoyride({ run: true });
+  }
+
   return (
     <Layout style={{
       minHeight: "100vh", width: "100%",
@@ -176,7 +182,7 @@ export default function Page() {
           selectedKeys={[activeTab!]}
           items={items} style={{ flex: 1, minWidth: 0 }}
         />
-        <Button icon={<PlusOutlined />} title='new project' onClick={handleProject} />
+        <Button className="joyride-new-project" icon={<PlusOutlined />} title='new project' onClick={handleProject} />
         {/* {userInfo?.uid ? <>
           <Dropdown menu={{ items: savedList }} placement="bottomRight" arrow={true}>
             <Button style={{ marginLeft: 15 }} type="primary" title='Saved list'>Submit list</Button>
@@ -185,11 +191,15 @@ export default function Page() {
 
         <Space style={{ marginLeft: 15 }} >
           {userInfo?.uid ? 
-            <><Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
+            <>
+            <span style={{ color: "#fff", cursor: "pointer"}} className="joyride-start" onClick={launchJoyride}><span style={{ color: "#fff" }} >Guide</span></span>
+            <Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
               <span style={{ color: "#fff" }} title={userInfo?.displayName ?? userInfo?.email ?? ''}>
                 {userInfo.displayName || userInfo.email || 'Anonymous'}
               </span>
-            </Dropdown></> : 
+            </Dropdown>
+            </> 
+            : 
             <Link style={{ color: "#fff" }} href="/login"><span style={{ color: "#fff" }} >Log in</span></Link>}
             {/* <a style={{ position: 'absolute', top: '50%', right: 0, padding: "0 15px", color: "#fff", fontSize: 20, transform: 'translateY(-50%)' }} title="Setting" onClick={() => setVisible(true)}><SettingFilled /></a> */}
         </Space>

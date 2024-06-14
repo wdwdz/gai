@@ -103,7 +103,7 @@ const Component: FC<IProps> = ({ project }) => {
 
   return (<Space direction="vertical" style={{ width: "100%" }} styles={{ item: { width: "100%" } }} align="start">
     <Space style={{ marginBottom: 20 }}>
-      <span>Record:</span>
+      <span className="joyride-record">Record:</span>
     </Space>
 
     {records.length ? <Timeline items={getTimeline(newList)} /> : <Empty />}

@@ -73,7 +73,10 @@ export const selectImageAtom = atom<{ [index: string]: IImages }>((get) => {
 })
 export const imageCanvasAtom = atom<fabric.Canvas[]>([]);
 
-
+export interface IJoyride {
+  run: boolean,
+}
+export const joyrideAtom = atom<IJoyride>({ run: false });
 
 
 

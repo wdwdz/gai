@@ -26,6 +26,7 @@
     "node-fetch": "^3.3.2",
     "react": "^18",
     "react-dom": "^18",
+    "react-joyride": "^2.8.2",
     "uid": "^2.0.2"
   },
   "devDependencies": {

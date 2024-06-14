@@ -579,17 +579,18 @@ const Component: FC<IProps> = ({ project }) => {
       <Space align="start" direction="vertical">
         <span>Prompts:</span>
         <Space align="start">
-          <TextArea rows={5} value={project.data?.prompt ?? ''} onChange={handlePromptChange} style={{ width: 400 }} />
+          <TextArea className="joyride-prompt" rows={5} value={project.data?.prompt ?? ''} onChange={handlePromptChange} style={{ width: 400 }} />
           {/* {UploadElement} */}
         </Space>
         <Space align="start">
-          <Button disabled={loading || !project.data?.prompt || inPaint} onClick={handleGeneration}>Generation</Button>
+          <Button className="joyride-generation" disabled={loading || !project.data?.prompt || inPaint} onClick={handleGeneration}>Generation</Button>
           <Tooltip title="You can select or upload the image you want to variation.">
-            <Button disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
+            <Button className="joyride-variation" disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
           </Tooltip>
 
           {/* <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button> */}
           <Button 
+            className="joyride-paint" 
             disabled={loading || !(selectImgInfo.length)}
             onClick={handleInPaint}
             style={inPaint ? { backgroundColor: 'blue', color: 'white' } : {}}
@@ -597,7 +598,7 @@ const Component: FC<IProps> = ({ project }) => {
         </Space>
       </Space>
       <Space direction="vertical">
-        {project.data ?
+        {/* {project.data ? */}
           <>
             <Space wrap={true} align="start">
               {Array(IMAGES_NUMBER).fill(null).map((_, index) => {
@@ -618,7 +619,8 @@ const Component: FC<IProps> = ({ project }) => {
               })}
             </Space>
           </>
-          : <Empty style={{ paddingTop: 20 }} description="Please create new project" />}
+          {/* : <Empty style={{ paddingTop: 20 }} description="Please create new project" />
+          } */}
       </Space>
     </Space>
   </div>);
