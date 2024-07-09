@@ -91,6 +91,7 @@ export default function Page() {
       setActiveTab(void 0)
     } else if (projects.length && activeTab === void 0) {
       setActiveTab(`${projects[0].key}`)
+      setJoyride({run: true})
     }
   }, [projects, userInfo?.uid])
 
@@ -151,6 +152,7 @@ export default function Page() {
   const handleLogout = async () => {
     try {
       await firebase.logout();
+      setJoyride({ run: false });
     } catch (error) {
       console.log(error)
     }
@@ -192,7 +194,12 @@ export default function Page() {
         <Space style={{ marginLeft: 15 }} >
           {userInfo?.uid ? 
             <>
-            <span style={{ color: "#fff", cursor: "pointer"}} className="joyride-start" onClick={launchJoyride}><span style={{ color: "#fff" }} >Guide</span></span>
+            <span
+              style={{ color: "#fff", cursor: "pointer"}}
+              className="joyride-start"
+              onClick={launchJoyride}>
+                <span style={{ color: "#fff" }}>Guide</span>
+            </span>
             <Dropdown menu={{ items: [{ label: "Log out", onClick: handleLogout, key: 0 }] }} placement="bottomRight" >
               <span style={{ color: "#fff" }} title={userInfo?.displayName ?? userInfo?.email ?? ''}>
                 {userInfo.displayName || userInfo.email || 'Anonymous'}

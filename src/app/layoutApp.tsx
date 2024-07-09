@@ -7,8 +7,9 @@ import Joyride, { Step, CallBackProps } from "react-joyride";
 
 const App: FC<{ children: React.ReactNode }> = ({ children }) => {
   useAtom(updateTokenAtom);
+
   let [userInfo, setUserInfo] = useAtom(userInfoAtom);
-  // userinfo 
+  let [joyride, setJoyride] = useAtom(joyrideAtom);
 
   // State to track if the component has mounted on the client side
   const [isClient, setIsClient] = useState(false);
@@ -28,6 +29,7 @@ const App: FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       target: '.joyride-start',
       content: 'Welcome to the app! Let me show you around.',
+      disableBeacon: true,
     },
     {
       target: '.joyride-new-project',
@@ -68,11 +70,12 @@ const App: FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       target: '.joyride-record',
       content: 'You can go back to the records area, select the history images and start from there.'
-    }
-
+    },
+    {
+      target: '.joyride-start',
+      content: 'Please select “C” in the survey question titled “Check Question"',
+    },
   ];
-
-  let [joyride, setJoyride] = useAtom(joyrideAtom);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action } = data;
