@@ -92,10 +92,13 @@ export default function Page() {
     } else if (projects.length && activeTab === void 0) {
       setActiveTab(`${projects[0].key}`)
     }
+  }, [projects, userInfo?.uid])
+
+  useEffect(() => {
     if (userInfo?.uid) {
       setJoyride({run: true})
     }
-  }, [projects, userInfo?.uid])
+  }, [userInfo?.uid])
 
   let project = useMemo(() => {
     let index = projects.findIndex(({ key }) => {
