@@ -91,6 +91,8 @@ export default function Page() {
       setActiveTab(void 0)
     } else if (projects.length && activeTab === void 0) {
       setActiveTab(`${projects[0].key}`)
+    }
+    if (userInfo?.uid) {
       setJoyride({run: true})
     }
   }, [projects, userInfo?.uid])
