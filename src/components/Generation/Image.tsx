@@ -95,6 +95,19 @@ const Component: FC<IProps> = ({ project }) => {
   // generation button event
   const handleGeneration = async () => {
     if (!project.data) { return; }
+    // track generation click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Generation Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let text_prompts = getPromptAndWeight(project.data.prompt ?? '');
     if (!text_prompts.length) {
       message.warning("Prompt is required.")
@@ -136,7 +149,19 @@ const Component: FC<IProps> = ({ project }) => {
   // variation button event
   const handleVariation = async () => {
     if (!project.data) { return; }
-
+    // track variation click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Variation Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let text_prompts = getPromptAndWeight(project.data.prompt ?? '');
     if (!text_prompts.length) {
       message.warning("Prompt is required.")
@@ -240,6 +265,19 @@ const Component: FC<IProps> = ({ project }) => {
     }
     setInPaint(true);
     if (!project.data) { return; }
+    // track Paint click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Paint Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
     let imgIndex = selectImgInfo[0].index;
@@ -267,6 +305,19 @@ const Component: FC<IProps> = ({ project }) => {
   // selection button event
   const handleEnlarge = async () => {
     if (!project.data) { return; }
+    // track Enlarge click event
+    try {
+      await api.track({
+        type: "Click",
+        target: "Enlarge Button",
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null
+      })
+    } catch (e) {
+      console.log(e)
+    }
     let image = "";
     let from = RECORD_FROM_TYPE.none;
     if (selectImgInfo.length) {
@@ -422,7 +473,7 @@ const Component: FC<IProps> = ({ project }) => {
     }
   }
   // selected image event
-  const handleSelectImage = (index: number) => {
+  const handleSelectImage = async (index: number) => {
     let img = imgList[index];
     if (!img || inPaint) { return }
     let selected = img.selected
@@ -434,6 +485,21 @@ const Component: FC<IProps> = ({ project }) => {
       ...imgs,
       [index]: img
     })
+    let target = img.selected ? 'Image Select' : 'Image Deselect'
+     // track image select/deselect click event
+     try {
+      await api.track({
+        type: "Click",
+        target,
+        projectId: project.data?.key || null,
+        recordId: selectRecord?.id || null,
+        selectedImage: null,
+        uid: userInfo?.uid || null,
+        imageIndex: index
+      })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   // =================================================================
@@ -513,17 +579,18 @@ const Component: FC<IProps> = ({ project }) => {
       <Space align="start" direction="vertical">
         <span>Prompts:</span>
         <Space align="start">
-          <TextArea rows={5} value={project.data?.prompt ?? ''} onChange={handlePromptChange} style={{ width: 400 }} />
-          {UploadElement}
+          <TextArea className="joyride-prompt" rows={5} value={project.data?.prompt ?? ''} onChange={handlePromptChange} style={{ width: 400 }} />
+          {/* {UploadElement} */}
         </Space>
         <Space align="start">
-          <Button disabled={loading || !project.data?.prompt || inPaint} onClick={handleGeneration}>Generation</Button>
+          <Button className="joyride-generation" disabled={loading || !project.data?.prompt || inPaint} onClick={handleGeneration}>Generation</Button>
           <Tooltip title="You can select or upload the image you want to variation.">
-            <Button disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
+            <Button className="joyride-variation" disabled={loading || !project.data?.prompt || disableVariationBtn} onClick={handleVariation}>Variation</Button>
           </Tooltip>
 
           {/* <Button disabled={loading || !(selectImgInfo.length) || inPaint} onClick={handleEnlarge}>Enlarge</Button> */}
           <Button 
+            className="joyride-paint" 
             disabled={loading || !(selectImgInfo.length)}
             onClick={handleInPaint}
             style={inPaint ? { backgroundColor: 'blue', color: 'white' } : {}}
@@ -531,7 +598,7 @@ const Component: FC<IProps> = ({ project }) => {
         </Space>
       </Space>
       <Space direction="vertical">
-        {project.data ?
+        {/* {project.data ? */}
           <>
             <Space wrap={true} align="start">
               {Array(IMAGES_NUMBER).fill(null).map((_, index) => {
@@ -552,7 +619,8 @@ const Component: FC<IProps> = ({ project }) => {
               })}
             </Space>
           </>
-          : <Empty style={{ paddingTop: 20 }} description="Please create new project" />}
+          {/* : <Empty style={{ paddingTop: 20 }} description="Please create new project" />
+          } */}
       </Space>
     </Space>
   </div>);
